@@ -33,9 +33,9 @@ class BTS7960
     uint8_t _R_PWM;
 };
 
-const uint8_t EN = 27;
-const uint8_t L_PWM = 14;
-const uint8_t R_PWM = 12;
+// const uint8_t EN = 27;
+// const uint8_t L_PWM = 14;
+// const uint8_t R_PWM = 12;
 
 
 
