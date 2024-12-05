@@ -24,6 +24,7 @@ class BTS7960
 
 	void TurnLeft(uint8_t pwm);
 	void TurnRight(uint8_t pwm);
+  void Brake(uint8_t pwm);
 	void Stop();
 
   private:

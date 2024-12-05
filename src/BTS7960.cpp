@@ -44,3 +44,8 @@ void BTS7960::Stop(){
   analogWrite(_L_PWM, LOW);
   analogWrite(_R_PWM, LOW);
 }
+
+void BTS7960::Brake(uint8_t pwm) {
+    analogWrite(_L_PWM, pwm);
+    analogWrite(_R_PWM, pwm);
+}
