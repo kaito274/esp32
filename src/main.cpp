@@ -8,6 +8,10 @@
 // Encoder output to Arduino Interrupt pin
 #define ENC_IN_1 13
 #define ENC_IN_2 35
+#define ENC_IN_B 26
+#define ENC_IN_A 13
+
+volatile int posi = 0; // Position updated by the encoder
 
 // Motor encoder output pulse per rotation (change as required)
 #define ENC_COUNT_REV 330
@@ -26,10 +30,11 @@ const int NUM_MOTORS = 1;
 volatile long encoderValues[] = {0, 0};
 std::vector<int> rpms = {0, 0};
 // std::vector<int> motorPwms = {50, 100};
-std::vector<int> encoderPins = {13, 35};
+std::vector<int> encoderPinsA = {13, 35};
+std::vector<int> encoderPinsB = {26, 25};
 
 // PID control variables
-double targetRPMs[] = {150.0, 100.0};  // Set your target RPM values
+double targetRPMs[] = {30.0, 100.0};  // Set your target RPM values
 double currentRPMs[] = {0.0, 0.0};     // Current RPM of each motor
 double computedPWMs[] = {0.0, 0.0};       // PWM output to motors
 
@@ -44,12 +49,25 @@ std::vector<PID> motorPIDs = {
   PID(&currentRPMs[1], &computedPWMs[1], &targetRPMs[1], Kp, Ki, Kd, DIRECT)
 };
 
+// PID constants
+double kp = 1.0;
+double kd = 0.0;
+double ki = 0.0;
+// Declare PID variables
+double input = 0;      // Current position (input for PID)
+double output = 0;     // Output from PID (motor speed)
+double setpoint = 0;   // Target position for the motor
+
+// Create a PID instance
+PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
+
 // Define a type for function pointers (callback functions)
 typedef void (*CallbackFunction)();
 
 // Declare the updateEncoder function
 void updateEncoder1();
 void updateEncoder2();
+void updateEncoderB();
 std::vector<CallbackFunction> updateEncoders = {updateEncoder1, updateEncoder2};
 
 // One-second interval for measurements
@@ -59,82 +77,142 @@ int interval = 1000;
 long previousMillis = 0;
 long currentMillis = 0;
 
+// Function to make the motor turn exactly one full revolution to the right
+void turnRightOneRound() {
+  encoderValues[0] = 0;  // Reset encoder count to 0
+
+  // Start the motor turning right
+  motorControllers[0].TurnRight(50);  // Max PWM value, adjust as needed
+
+  // Wait until the encoder counts one full revolution
+  while (encoderValues[0] < ENC_COUNT_REV) {
+    // Keep checking the encoder count while the motor is turning
+    delay(10);  // Small delay to prevent overwhelming the processor with constant checks
+  }
+
+  // Stop the motor once one full revolution is completed
+  // motorControllers[0].TurnRight(0);  // Stop the motor
+  Serial.println("One full revolution completed!");
+}
+
 void setup() {
   Serial.begin(115200);
 
   pinMode(LED, OUTPUT);
   for (int i = 0; i < NUM_MOTORS; i++){
-    pinMode(encoderPins[i], INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(encoderPins[i]), updateEncoders[i], RISING);
+    pinMode(encoderPinsA[i], INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(encoderPinsA[i]), updateEncoders[i], RISING);
   }
+  pinMode(ENC_IN_B, INPUT);
+  // pinMode(ENC_IN_A, INPUT);
+  attachInterrupt(digitalPinToInterrupt(ENC_IN_A), updateEncoderB, RISING);
 
   for(int i = 0; i < NUM_MOTORS; i++) {
     motorControllers[i].Enable();
-    motorControllers[i].TurnRight(currentRPMs[i]);
-    
+    // motorControllers[i].TurnRight(currentRPMs[i]);
     // Initialize PID controller for each motor
     motorPIDs[i].SetMode(AUTOMATIC);  // Enable PID control
     motorPIDs[i].SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
     motorPIDs[i].SetSampleTime(interval); // Set PID sample time to interval
   }
-
+  setpoint = 333;  // Set the target position for the motor
+  myPID.SetMode(AUTOMATIC);  // Enable PID control
+  myPID.SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
+  // myPID.SetSampleTime(interval); // Set PID sample time to interval
   // initWiFi();
   // startServer();
 }
 
 void loop() {
-  currentMillis = millis();
+  // currentMillis = millis();
+  // if (currentMillis - previousMillis > interval) {
+  //   int duration = currentMillis - previousMillis;
+  //   previousMillis = currentMillis;
 
-  if (currentMillis - previousMillis > interval) {
-    int duration = currentMillis - previousMillis;
-    previousMillis = currentMillis;
+  //   Serial.println("=========================================");
 
-    Serial.println("=========================================");
+  //   for(int i = 0; i < NUM_MOTORS; i++) {
+  //     // Calculate current RPM
+  //     currentRPMs[i] = (float)(encoderValues[i] * 60 / ENC_COUNT_REV);
+  //     // currentRPMs[i] = rpms[i]; // Update current RPM for PID computation
 
-    for(int i = 0; i < NUM_MOTORS; i++) {
-      // Calculate current RPM
-      currentRPMs[i] = (float)(encoderValues[i] * 60 / ENC_COUNT_REV);
-      // currentRPMs[i] = rpms[i]; // Update current RPM for PID computation
+  //     // Compute PID output
+  //     motorPIDs[i].Compute();
+  //     previousPWMs[i] += computedPWMs[i]; 
+  //     previousPWMs[i] = constrain(previousPWMs[i], 0, 255);
+  //     // Apply the PID output to the motor
+  //     double error = targetRPMs[i] - currentRPMs[i];
 
-      // Compute PID output
-      motorPIDs[i].Compute();
-      previousPWMs[i] += computedPWMs[i]; 
-      // Apply the PID output to the motor
-      double error = targetRPMs[i] - currentRPMs[i];
+  //     // Print status
+  //     Serial.print("MOTOR ");
+  //     Serial.println(i + 1);
+  //     Serial.print("DURATION: ");
+  //     Serial.print(duration);
+  //     Serial.print('\t');
+  //     Serial.print("PWM VALUE: ");
+  //     Serial.print(previousPWMs[i]);
+  //     Serial.print('\t');
+  //     Serial.print("PULSES/Encoder Values: ");
+  //     Serial.print(encoderValues[i]);
+  //     Serial.print('\t');
+  //     Serial.print("SPEED: ");
+  //     Serial.print(currentRPMs[i]);
+  //     Serial.println(" RPM");
 
-      // Print status
-      Serial.print("MOTOR ");
-      Serial.println(i + 1);
-      Serial.print("DURATION: ");
-      Serial.print(duration);
-      Serial.print('\t');
-      Serial.print("PWM VALUE: ");
-      Serial.print(previousPWMs[i]);
-      Serial.print('\t');
-      Serial.print("PULSES/Encoder Values: ");
-      Serial.print(encoderValues[i]);
-      Serial.print('\t');
-      Serial.print("SPEED: ");
-      Serial.print(currentRPMs[i]);
-      Serial.println(" RPM");
+  //     // (Optional) Print PID terms if supported by your library
+  //     Serial.print("P Term: ");
+  //     Serial.print(motorPIDs[i].GetKp() * error);
+  //     Serial.print(" I Term: ");
+  //     Serial.print(motorPIDs[i].GetKi());
+  //     // Add logic to calculate/display the integral term if needed
+  //     Serial.print(" D Term: ");
+  //     Serial.print(motorPIDs[i].GetKd());
+  //     Serial.print(" Error: ");
+  //     Serial.println(error);
+  //     // Add logic to calculate/display the derivative term if needed
 
-      // (Optional) Print PID terms if supported by your library
-      Serial.print("P Term: ");
-      Serial.print(motorPIDs[i].GetKp() * error);
-      Serial.print(" I Term: ");
-      Serial.print(motorPIDs[i].GetKi());
-      // Add logic to calculate/display the integral term if needed
-      Serial.print(" D Term: ");
-      Serial.print(motorPIDs[i].GetKd());
-      Serial.print(" Error: ");
-      Serial.println(error);
-      // Add logic to calculate/display the derivative term if needed
+  //     encoderValues[i] = 0;
+  //     // motorControllers[i].TurnRight((int)computedPWMs[i]);
+  //     motorControllers[i].TurnRight(previousPWMs[i]);
+  //   //    Serial.print("Current position: ");
+  //   // Serial.println(posi);
+  //   }
+  // }
+  // turnRightOneRound();  // Make the motor turn one full revolution to the right
+  // delay(2000);
+  // currentMillis = millis();
+  // if (currentMillis - previousMillis > interval) {
+    // int duration = currentMillis - previousMillis;
+    // previousMillis = currentMillis;
+    noInterrupts();
+    input = posi;
+    interrupts();
 
-      encoderValues[i] = 0;
-      // motorControllers[i].TurnRight((int)computedPWMs[i]);
-      motorControllers[i].TurnRight(previousPWMs[i]);
+    // Compute the PID output
+    myPID.Compute();
+
+    double error = setpoint - input;
+
+    // Apply the PID output to the motor (convert to PWM)
+    int pwr = (int)fabs(output);  // Convert output to absolute power value
+    pwr = constrain(pwr, 0, 100); // Ensure the PWM value is within valid range (0 to 255)
+
+    // Determine the direction (sign of the output)
+    int dir = (output < 0) ? -1 : 1;
+    Serial.print("Dir: "); Serial.println(dir);
+    if(dir > 0 ){
+      motorControllers[0].TurnLeft(pwr);
+    } else {
+      motorControllers[0].TurnRight(pwr);
     }
-  }
+
+    // Print debug information
+    // Serial.print("Duration: "); Serial.print(duration);
+    Serial.print("\tTarget: "); Serial.print(setpoint);
+    Serial.print("\tCurrent position: "); Serial.print(input);
+    Serial.print("\tMotor Power: "); Serial.print(pwr);
+    Serial.print("\tError: "); Serial.print(error);
+  // }
 }
 
 void updateEncoder1() {
@@ -143,4 +221,14 @@ void updateEncoder1() {
 
 void updateEncoder2() {
   encoderValues[1]++;
+}
+
+void updateEncoderB() {
+  int B = digitalRead(ENC_IN_B);
+  // Serial.println(B);
+    if (B > 0) {
+        posi++;
+    } else {
+        posi--;
+    }
 }
