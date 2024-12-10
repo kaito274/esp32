@@ -13,6 +13,7 @@ private:
     double input;  // Current position (input for PID)
     double output; // PID output
     double setpoint; // target position for the wheel
+    double pwm = 0;
 public:
     Wheel();
     Wheel(int pinA, int pinB, int EN, int L_PWM, int R_PWM, double input, double setpoint, double Kp, double Ki, double Kd);
@@ -22,7 +23,21 @@ public:
     PID getPID();
     Encoder getEncoder();
     Motor getMotor();
+    int getInput();
+    int getOutput();
+    int getSetpoint();
+    volatile long getEncoderValue();
+    int getPosition();
+    int getPWM();
+
+    void triggerA();
+    void triggerB();
+    void setInput(double input);
     void setSetpoint(double setpoint);
+    void setPWM(double pwm);
+    void tuningRPM(double current_rpm);
+    void info();
+
     ~Wheel();
 };
 

@@ -9,7 +9,7 @@
 class Encoder {
 private: 
     int pinA, pinB;
-    volatile long encoderValue;
+    volatile long encoderValue = 10;
     int position;
 
     // Static interrupt handler functions

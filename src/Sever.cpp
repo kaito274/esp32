@@ -105,8 +105,8 @@ static const char index_html[] PROGMEM = R"rawliteral(
           <div class="card">
             <p class="card-title"><i class="fa-solid fa-gear"></i> DC Motor A</p>
             <p>
-              <a href="forward"><button class="button-on"><i class="fa-solid fa-arrow-up"></i> FORWARD</button></a>
-              <a href="backward"><button class="button-off"><i class="fa-solid fa-arrow-down"></i> BACKWARD</button></a>
+              <a href="forward"><button class="button-on"><i class="fa-solid fa-arrow-up"></i> CHANGE RPM</button></a>
+              <a href="backward"><button class="button-off"><i class="fa-solid fa-arrow-down"></i> MOVE</button></a>
             </p>
             <p>
               <a href="stop"><button class="button-stop"><i class="fa-solid fa-stop"></i> STOP</button></a>

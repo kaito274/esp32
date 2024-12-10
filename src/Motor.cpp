@@ -8,10 +8,10 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #include "Motor.h"
 
 Motor::Motor(uint8_t L_EN, uint8_t R_EN, uint8_t L_PWM, uint8_t R_PWM){
-	_R_PWM = R_PWM;
-	_L_PWM = L_PWM;
-	_L_EN = L_EN;
-	_R_EN = R_EN;
+	this->_R_PWM = R_PWM;
+	this->_L_PWM = L_PWM;
+	this->_L_EN = L_EN;
+	this->_R_EN = R_EN;
 	pinMode(_R_PWM, OUTPUT);
 	pinMode(_L_PWM, OUTPUT);
 	pinMode(_L_EN, OUTPUT);

@@ -20,6 +20,41 @@ void Wheel::initPID(double input, double setpoint, double Kp, double Ki, double 
     this->pid->SetOutputLimits(-255, 255);
 }
 
+int Wheel::getInput() {
+    return this->input;
+}
+
+int Wheel::getOutput() {
+    return this->output;
+}
+
+int Wheel::getSetpoint() {
+    return this->setpoint;
+}
+
+volatile long Wheel::getEncoderValue() {
+    return this->encoder->getEncoderValue();
+}
+
+int Wheel::getPosition() {
+    return this->encoder->getPosition();
+}
+
+int Wheel::getPWM() {
+    return this->pwm;
+}
+
+void Wheel::triggerA() {
+    encoder->triggerA();
+}
+
+void Wheel::triggerB() {
+    encoder->triggerB();
+}
+
+void Wheel::setInput(double input) {
+    this->input = input;
+}
 
 PID Wheel::getPID() {
     return *this->pid;
@@ -35,6 +70,30 @@ Motor Wheel::getMotor() {
 
 void Wheel::setSetpoint(double setpoint) {
     this->setpoint = setpoint;
+}
+
+void Wheel::setPWM(double pwm) {
+    this->pwm = pwm;
+}
+
+void Wheel::tuningRPM(double current_rpm) {
+    this->input = current_rpm;
+    this->pid->Compute();
+    this->pwm += this->output;
+    this->pwm = constrain(this->pwm, 0, 255);
+    this->encoder->resetEncoderValue();
+}
+
+void Wheel::info() {
+    Serial.println("######### Wheel Info #########");
+    Serial.print("PWM: ");
+    Serial.print(this->pwm);
+    Serial.print("\tPULSES/Encoder Values: ");
+    Serial.print(this->getEncoderValue());
+    Serial.print("\tRPM: ");
+    Serial.print(this->input);
+    Serial.print("\tERROR: ");
+    Serial.println(this->output);
 }
 
 Wheel::~Wheel() {
