@@ -5,8 +5,8 @@
   The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 *********/
 
-#include "temp.h"
-#include "BTS7960.h"
+#include "Sever.h"
+#include "Motor.h"
 
 // Replace with your network credentials
 static const char* ssid = "Hieu Huan";

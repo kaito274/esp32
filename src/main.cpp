@@ -1,6 +1,8 @@
-#include "BTS7960.h"
-#include "temp.h"
+#include "Motor.h"
+#include "Sever.h"
 #include "util.h"
+#include "Encoder.h"
+#include "Wheel.h"
 #include <PID_v1.h>
 #include <vector>
 #define LED 2
@@ -14,16 +16,14 @@
 volatile int posi = 0; // Position updated by the encoder
 volatile int previousPos = 0; // Previous position
 
-// Motor encoder output pulse per rotation (change as required)
-#define ENC_COUNT_REV 330
 
 // Pin configurations for motor 1 and motor 2
 motorPin motor1Pin = motorPin(27, 14, 12); // EN, L_PWM, R_PWM
 motorPin motor2Pin = motorPin(25, 33, 32); // EN, L_PWM, R_PWM
 
-BTS7960 motorControllers[] = {
-  BTS7960(motor1Pin.EN, motor1Pin.L_PWM, motor1Pin.R_PWM),
-  BTS7960(motor2Pin.EN, motor2Pin.L_PWM, motor2Pin.R_PWM)
+Motor motorControllers[] = {
+  Motor(motor1Pin.EN, motor1Pin.L_PWM, motor1Pin.R_PWM),
+  Motor(motor2Pin.EN, motor2Pin.L_PWM, motor2Pin.R_PWM)
 };
 
 const int NUM_MOTORS = 1;
@@ -61,16 +61,10 @@ double output = 0;     // Output from PID (motor speed)
 double setpoint = 0;   // Target position for the motor
 
 // Create a PID instance
-PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
+// PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
 
 // Define a type for function pointers (callback functions)
 typedef void (*CallbackFunction)();
-
-// Declare the updateEncoder function
-void updateEncoder1();
-void updateEncoder2();
-void updateEncoderB();
-std::vector<CallbackFunction> updateEncoders = {updateEncoder1, updateEncoder2};
 
 void setupTimerInterrupt();
 
@@ -83,62 +77,58 @@ long currentMillis = 0;
 
 long previousEncoderValues = 0;
 
-// Function to make the motor turn exactly one full revolution to the right
-void turnRightOneRound() {
-  encoderValues[0] = 0;  // Reset encoder count to 0
+std::vector<Wheel> wheels = {
+  Wheel(13, 26, motor1Pin.EN, motor1Pin.L_PWM, motor1Pin.R_PWM, 0, 0, kp, kd, ki)
+};
 
-  // Start the motor turning right
-  motorControllers[0].TurnRight(50);  // Max PWM value, adjust as needed
+// Declare the trigger interrupt function
+void triggerW1A() {wheels[0].getEncoder().triggerA();};
+void triggerW1B() {wheels[0].getEncoder().triggerB();};
 
-  // Wait until the encoder counts one full revolution
-  while (encoderValues[0] < ENC_COUNT_REV) {
-    // Keep checking the encoder count while the motor is turning
-    delay(10);  // Small delay to prevent overwhelming the processor with constant checks
-  }
-
-  // Stop the motor once one full revolution is completed
-  // motorControllers[0].TurnRight(0);  // Stop the motor
-  Serial.println("One full revolution completed!");
-}
 
 void setup() {
   Serial.begin(115200);
 
   pinMode(LED, OUTPUT);
-  for (int i = 0; i < NUM_MOTORS; i++){
-    pinMode(encoderPinsA[i], INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(encoderPinsA[i]), updateEncoders[i], RISING);
-  }
+
+  attachInterrupt(digitalPinToInterrupt(wheels[0].getEncoder().getPinA()), triggerW1A, RISING);
+  attachInterrupt(digitalPinToInterrupt(wheels[0].getEncoder().getPinB()), triggerW1B, RISING);
+
+  // for (int i = 0; i < NUM_MOTORS; i++){
+  //   pinMode(encoderPinsA[i], INPUT_PULLUP);
+  //   attachInterrupt(digitalPinToInterrupt(encoderPinsA[i]), updateEncoders[i], RISING);
+  // }
   // pinMode(ENC_IN_B, INPUT);
   // // pinMode(ENC_IN_A, INPUT);
   // attachInterrupt(digitalPinToInterrupt(ENC_IN_A), updateEncoderB, RISING);
 
-  for(int i = 0; i < NUM_MOTORS; i++) {
-    motorControllers[i].Enable();
-    // motorControllers[i].TurnLeft(255);
-    // Initialize PID controller for each motor
-    motorPIDs[i].SetMode(AUTOMATIC);  // Enable PID control
-    motorPIDs[i].SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
-    motorPIDs[i].SetSampleTime(interval); // Set PID sample time to interval
-  }
-  setpoint = 333 * 10;  // Set the target position for the motor
-  myPID.SetMode(AUTOMATIC);  // Enable PID control
-  myPID.SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
+  // for(int i = 0; i < NUM_MOTORS; i++) {
+  //   motorControllers[i].Enable();
+  //   // motorControllers[i].TurnLeft(255);
+  //   // Initialize PID controller for each motor
+  //   motorPIDs[i].SetMode(AUTOMATIC);  // Enable PID control
+  //   motorPIDs[i].SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
+  //   motorPIDs[i].SetSampleTime(interval); // Set PID sample time to interval
+  // }
+  // setpoint = 333 * 10;  // Set the target position for the motor
+  // myPID.SetMode(AUTOMATIC);  // Enable PID control
+  // myPID.SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
   // myPID.SetSampleTime(interval); // Set PID sample time to interval
   // initWiFi();
   // startServer();
-  setupTimerInterrupt();
   
 }
 
-hw_timer_t *timer = NULL;  // Hardware timer instance
-volatile bool toggleLED = false;  // Flag to toggle the LED
-volatile bool toggleMotor = false;  // Flag to toggle the motor
 volatile int currentSpeed = 0;
 
 int lastEncoderPulses = 0;
 
 void loop() {
+
+
+
+
+
   // currentMillis = millis();
   // if (currentMillis - previousMillis > interval) {
   //   int duration = currentMillis - previousMillis;
@@ -263,38 +253,7 @@ void loop() {
   //   lastEncoderPulses = encoderValues[0];
   // }
 
-  // Check if it's time to toggle the LED (every second)
-  if (toggleLED) {
-    digitalWrite(LED, !digitalRead(LED));  // Toggle the LED state
-    toggleLED = false;  // Reset the flag
-  }
-  if (toggleMotor) {
-    motorControllers[0].TurnRight(currentSpeed);
-    toggleMotor = false;
-    currentSpeed = (currentSpeed == 0) ? 255 : 0;
-    // Serial.println("=========================================");
-    Serial.println("current encoder: " + String(encoderValues[0]));
-    encoderValues[0] = 0;
-  }
-
 }
-
-void IRAM_ATTR timerIsr() {
-  // This interrupt is triggered every 1 second (via timer)
-
-  toggleLED = true;  // Set the flag to toggle the LED
-  toggleMotor = true;  // Set the flag to toggle the motor
-
-}
-
-void setupTimerInterrupt() {
-  // Create a hardware timer (Timer 0) to trigger an interrupt every 1 second (1000ms)
-  timer = timerBegin(0, 80, true);  // Timer 0, 80 prescaler (1 tick = 1 microsecond)
-  timerAttachInterrupt(timer, &timerIsr, true);  // Attach the ISR
-  timerAlarmWrite(timer, 1000000, true);  // Set the timer to trigger every 1 second (1000000 microseconds)
-  timerAlarmEnable(timer);  // Enable the timer interrupt
-}
-
 void updateEncoder1() {
   encoderValues[0]++;
 }

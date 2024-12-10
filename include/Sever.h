@@ -1,11 +1,11 @@
-#ifndef __TEMP_H__
-#define __TEMP_H__
+#ifndef __SEVER_H__
+#define __SEVER_H__
 
 #include <Arduino.h>
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-// #include "BTS7960.h"
+// #include "Motor.h"
 
 // Motor A pins
 static int motor1Pin1 = 27; 
@@ -19,4 +19,4 @@ void moveBackward();
 void stopMotor();
 void startServer();
 
-#endif // __TEMP_H__
+#endif 

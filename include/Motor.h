@@ -5,8 +5,8 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License
  ****************************************************/
  
-#ifndef BTS7960_h
-#define BTS7960_h
+#ifndef __MOTOR_H__
+#define __MOTOR_H__
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
@@ -14,13 +14,13 @@ Unless required by applicable law or agreed to in writing, software distributed 
 #include "WProgram.h"
 #endif
 
-class BTS7960
+class Motor
 {
   public:
-	BTS7960(uint8_t EN, uint8_t L_PWM, uint8_t R_PWM) : BTS7960(EN, 0, L_PWM, R_PWM) {}
-    BTS7960(uint8_t L_EN, uint8_t R_EN, uint8_t L_PWM, uint8_t R_PWM);
-    void Enable();
-    void Disable();
+	Motor(uint8_t EN, uint8_t L_PWM, uint8_t R_PWM) : Motor(EN, 0, L_PWM, R_PWM) {}
+  Motor(uint8_t L_EN, uint8_t R_EN, uint8_t L_PWM, uint8_t R_PWM);
+  void Enable();
+  void Disable();
 
 	void TurnLeft(uint8_t pwm);
 	void TurnRight(uint8_t pwm);
@@ -33,11 +33,5 @@ class BTS7960
     uint8_t _L_PWM;
     uint8_t _R_PWM;
 };
-
-// const uint8_t EN = 27;
-// const uint8_t L_PWM = 14;
-// const uint8_t R_PWM = 12;
-
-
 
 #endif
