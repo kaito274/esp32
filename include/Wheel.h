@@ -35,7 +35,7 @@ public:
     void setInput(double input);
     void setSetpoint(double setpoint);
     void setPWM(double pwm);
-    void tuningRPM(double current_rpm);
+    void tuningRPM();
     void info();
 
     ~Wheel();

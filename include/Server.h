@@ -1,5 +1,5 @@
-#ifndef __SEVER_H__
-#define __SEVER_H__
+#ifndef __SERVER_H__
+#define __SERVER_H__
 
 #include <Arduino.h>
 #include <WiFi.h>

@@ -76,8 +76,9 @@ void Wheel::setPWM(double pwm) {
     this->pwm = pwm;
 }
 
-void Wheel::tuningRPM(double current_rpm) {
-    this->input = current_rpm;
+void Wheel::tuningRPM() {
+    double currentRPM = (float)this->getEncoderValue() * 60 / ENC_COUNT_REV;
+    this->input = currentRPM;
     this->pid->Compute();
     this->pwm += this->output;
     this->pwm = constrain(this->pwm, 0, 255);
