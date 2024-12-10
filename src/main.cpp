@@ -12,6 +12,7 @@
 #define ENC_IN_A 13
 
 volatile int posi = 0; // Position updated by the encoder
+volatile int previousPos = 0; // Previous position
 
 // Motor encoder output pulse per rotation (change as required)
 #define ENC_COUNT_REV 330
@@ -51,8 +52,9 @@ std::vector<PID> motorPIDs = {
 
 // PID constants
 double kp = 1.0;
-double kd = 0.0;
+double kd = 0;
 double ki = 0.0;
+
 // Declare PID variables
 double input = 0;      // Current position (input for PID)
 double output = 0;     // Output from PID (motor speed)
@@ -70,12 +72,16 @@ void updateEncoder2();
 void updateEncoderB();
 std::vector<CallbackFunction> updateEncoders = {updateEncoder1, updateEncoder2};
 
+void setupTimerInterrupt();
+
 // One-second interval for measurements
 int interval = 1000;
 
 // Counters for milliseconds during interval
 long previousMillis = 0;
 long currentMillis = 0;
+
+long previousEncoderValues = 0;
 
 // Function to make the motor turn exactly one full revolution to the right
 void turnRightOneRound() {
@@ -103,25 +109,34 @@ void setup() {
     pinMode(encoderPinsA[i], INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(encoderPinsA[i]), updateEncoders[i], RISING);
   }
-  pinMode(ENC_IN_B, INPUT);
-  // pinMode(ENC_IN_A, INPUT);
-  attachInterrupt(digitalPinToInterrupt(ENC_IN_A), updateEncoderB, RISING);
+  // pinMode(ENC_IN_B, INPUT);
+  // // pinMode(ENC_IN_A, INPUT);
+  // attachInterrupt(digitalPinToInterrupt(ENC_IN_A), updateEncoderB, RISING);
 
   for(int i = 0; i < NUM_MOTORS; i++) {
     motorControllers[i].Enable();
-    // motorControllers[i].TurnRight(currentRPMs[i]);
+    // motorControllers[i].TurnLeft(255);
     // Initialize PID controller for each motor
     motorPIDs[i].SetMode(AUTOMATIC);  // Enable PID control
     motorPIDs[i].SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
     motorPIDs[i].SetSampleTime(interval); // Set PID sample time to interval
   }
-  setpoint = 333;  // Set the target position for the motor
+  setpoint = 333 * 10;  // Set the target position for the motor
   myPID.SetMode(AUTOMATIC);  // Enable PID control
   myPID.SetOutputLimits(-255, 255); // Output PWM limits (-255->255)
   // myPID.SetSampleTime(interval); // Set PID sample time to interval
   // initWiFi();
   // startServer();
+  setupTimerInterrupt();
+  
 }
+
+hw_timer_t *timer = NULL;  // Hardware timer instance
+volatile bool toggleLED = false;  // Flag to toggle the LED
+volatile bool toggleMotor = false;  // Flag to toggle the motor
+volatile int currentSpeed = 0;
+
+int lastEncoderPulses = 0;
 
 void loop() {
   // currentMillis = millis();
@@ -174,45 +189,110 @@ void loop() {
   //     encoderValues[i] = 0;
   //     // motorControllers[i].TurnRight((int)computedPWMs[i]);
   //     motorControllers[i].TurnRight(previousPWMs[i]);
-  //   //    Serial.print("Current position: ");
-  //   // Serial.println(posi);
-  //   }
+  //   Serial.print("Current position: ");
+  //   Serial.println(posi);
+  //   // }
+  // }
+  // if(previousPos != posi){
+  //   Serial.print("Current position: ");
+  //   Serial.println(posi);
+  //   previousPos = posi;
   // }
   // turnRightOneRound();  // Make the motor turn one full revolution to the right
   // delay(2000);
-  // currentMillis = millis();
-  // if (currentMillis - previousMillis > interval) {
-    // int duration = currentMillis - previousMillis;
-    // previousMillis = currentMillis;
-    noInterrupts();
-    input = posi;
-    interrupts();
 
-    // Compute the PID output
-    myPID.Compute();
+  // int duration = currentMillis - previousMillis;
+  // previousMillis = currentMillis;
+  // noInterrupts();
+  // input = posi;
+  // interrupts();
 
-    double error = setpoint - input;
+  // // Compute the PID output
+  // myPID.Compute();
 
-    // Apply the PID output to the motor (convert to PWM)
-    int pwr = (int)fabs(output);  // Convert output to absolute power value
-    pwr = constrain(pwr, 0, 100); // Ensure the PWM value is within valid range (0 to 255)
+  // double error = setpoint - input;
 
-    // Determine the direction (sign of the output)
-    int dir = (output < 0) ? -1 : 1;
-    Serial.print("Dir: "); Serial.println(dir);
-    if(dir > 0 ){
-      motorControllers[0].TurnLeft(pwr);
-    } else {
-      motorControllers[0].TurnRight(pwr);
-    }
+  // // Apply the PID output to the motor (convert to PWM)
+  // int pwr = (int)fabs(output);  // Convert output to absolute power value
+  // pwr = constrain(pwr, 0, 100); // Ensure the PWM value is within valid range (0 to 255)
 
-    // Print debug information
-    // Serial.print("Duration: "); Serial.print(duration);
-    Serial.print("\tTarget: "); Serial.print(setpoint);
-    Serial.print("\tCurrent position: "); Serial.print(input);
-    Serial.print("\tMotor Power: "); Serial.print(pwr);
-    Serial.print("\tError: "); Serial.print(error);
+  // // Determine the direction (sign of the output)
+  // int dir = (output < 0) ? -1 : 1;
+  // // Serial.print("Dir: "); Serial.println(dir);
+  // if(dir > 0 ){
+  //   motorControllers[0].TurnLeft(pwr);
+  // } else {
+  //   motorControllers[0].TurnRight(pwr);
   // }
+
+  // // Print debug information
+  // // Serial.print("Duration: "); Serial.print(duration);
+  // Serial.print("\tTarget: "); Serial.print(setpoint);
+  // Serial.print("\tCurrent position: "); Serial.print(input);
+  // Serial.print("\tMotor Power: "); Serial.print(pwr);
+  // Serial.print("\tError: "); Serial.print(error);
+
+  // MEASURE REAL RPM
+  currentMillis = millis();
+  // if (encoderValues[0] != previousEncoderValues) {
+  //   noInterrupts();
+  //   previousEncoderValues = encoderValues[0];
+  //   Serial.println("=========================================");
+  //   Serial.println("current encoder: " + String(encoderValues[0]));
+  //   Serial.println("current time: " + String(currentMillis)); 
+  //   interrupts();
+  // }
+  // if (currentMillis != previousMillis) {
+  //   previousMillis = currentMillis;
+  //   Serial.println("=========================================");
+  //   Serial.println("currentMillis: " + String(currentMillis));
+  //   Serial.println("current pulse: " + String(encoderValues[0]));
+  // }
+  // if (currentMillis - previousMillis >= interval) {
+  //   previousMillis = currentMillis;
+
+  //   // Calculate RPM
+  //   long pulseCount = encoderValues[0] - lastEncoderPulses;  // Get pulses in the last second
+  //   long testrpm = (pulseCount * 60) / ENC_COUNT_REV;  // Calculate RPM
+
+  //   // Print the RPM
+  //   Serial.print("RPM: ");
+  //   Serial.println(testrpm);
+
+  //   // Reset pulse count for the next interval
+  //   lastEncoderPulses = encoderValues[0];
+  // }
+
+  // Check if it's time to toggle the LED (every second)
+  if (toggleLED) {
+    digitalWrite(LED, !digitalRead(LED));  // Toggle the LED state
+    toggleLED = false;  // Reset the flag
+  }
+  if (toggleMotor) {
+    motorControllers[0].TurnRight(currentSpeed);
+    toggleMotor = false;
+    currentSpeed = (currentSpeed == 0) ? 255 : 0;
+    // Serial.println("=========================================");
+    Serial.println("current encoder: " + String(encoderValues[0]));
+    encoderValues[0] = 0;
+  }
+
+}
+
+void IRAM_ATTR timerIsr() {
+  // This interrupt is triggered every 1 second (via timer)
+
+  toggleLED = true;  // Set the flag to toggle the LED
+  toggleMotor = true;  // Set the flag to toggle the motor
+
+}
+
+void setupTimerInterrupt() {
+  // Create a hardware timer (Timer 0) to trigger an interrupt every 1 second (1000ms)
+  timer = timerBegin(0, 80, true);  // Timer 0, 80 prescaler (1 tick = 1 microsecond)
+  timerAttachInterrupt(timer, &timerIsr, true);  // Attach the ISR
+  timerAlarmWrite(timer, 1000000, true);  // Set the timer to trigger every 1 second (1000000 microseconds)
+  timerAlarmEnable(timer);  // Enable the timer interrupt
 }
 
 void updateEncoder1() {
