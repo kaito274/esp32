@@ -8,7 +8,7 @@ double kd = 0;
 double ki = 0.0;
 
 // Pin configurations for motors
-motorPin motorPin1 = motorPin(13, 26, 27, 14, 12);
+motorPin motorPin1 = motorPin(13, 26, 27, 14, 12); // pinA, pinB, EN, L_PWM, R_PWM 
 
 // Declare the trigger interrupt function
 Wheel wheelsSpeed[] = {

@@ -28,7 +28,73 @@ static const char index_html[] PROGMEM = R"rawliteral(
       <link rel="icon" type="image/png" href="favicon.png">
       <script src="https://kit.fontawesome.com/0294e3a09e.js" crossorigin="anonymous"></script>
       <style>
-        /* Your existing CSS styles here */
+        html {
+        font-family: Arial, Helvetica, sans-serif;
+        text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: white;
+        }
+        .topnav {
+            overflow: hidden;
+            background-color: #0A1128;
+        }
+        body {
+            margin: 0;
+        }
+        .content {
+            padding: 50px;
+        }
+        .card-grid {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+        .card {
+            background-color: white;
+            box-shadow: 2px 2px 12px 1px rgba(140,140,140,.5);
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #034078
+        }
+        .state {
+            font-size: 1.2rem;
+            color:#1282A2;
+        }
+        button {
+            border: none;
+            color: #FEFCFB;
+            padding: 15px 32px;
+            text-align: center;
+            font-size: 16px;
+            width: 150px;
+            border-radius: 4px;
+            transition-duration: 0.4s;
+        }
+        .button-on {
+            background-color:#034078;
+        }
+        .button-on:hover {
+            background-color: #1282A2;
+        }
+        .button-off {
+            background-color:#858585;
+        }
+        .button-off:hover {
+            background-color: #252524;
+        }
+        .button-stop {
+            background-color:#5e0f0f;
+            width: 100%;
+        }
+        .button-stop:hover {
+            background-color: #9b332c;
+        }
       </style>
     </head>
     <body>
@@ -117,12 +183,14 @@ void move() {
   // Logic to start the motor
   // For example, turn on the motor and LED
   digitalWrite(2, HIGH); // Assuming you have a LED connected
+  wheelsSpeed[0].getMotor().Enable();
 }
 
 void stopMotor() {
   // Logic to stop the motor
   // For example, turn off the motor and LED
   digitalWrite(2, LOW); // Turn off LED when motor is stopped
+  wheelsSpeed[0].getMotor().Disable();
 }
 
 
