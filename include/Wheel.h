@@ -16,7 +16,7 @@ private:
     double pwm = 0;
 public:
     Wheel();
-    Wheel(int pinA, int pinB, int EN, int L_PWM, int R_PWM, double input, double setpoint, double Kp, double Ki, double Kd);
+    Wheel(int pinA, int pinB, int L_PWM, int R_PWM, double input, double setpoint, double Kp, double Ki, double Kd);
     void initPID(double input, double setpoint, double Kp, double Ki, double Kd);
     void initEncoder();
     void initMotor();

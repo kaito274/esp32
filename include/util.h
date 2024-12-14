@@ -2,11 +2,10 @@
 #define __UTIL_H__
 
 struct motorPin{
-    int pinA, pinB, EN, L_PWM, R_PWM;
-    motorPin(int pinA, int pinB, int EN, int L_PWM, int R_PWM){
+    int pinA, pinB, L_PWM, R_PWM;
+    motorPin(int pinA, int pin, int L_PWM, int R_PWM){
         this->pinA = pinA;
         this->pinB = pinB;
-        this->EN = EN;
         this->L_PWM = L_PWM;
         this->R_PWM = R_PWM;
     }
