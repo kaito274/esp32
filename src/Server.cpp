@@ -202,7 +202,7 @@ void changeRPM()
   Serial.println(cur);
   Serial.print("Setpoint: ");
   Serial.println(arrSetpoints[cur]);
-  wheelsSpeed[0].setTargetRPM(arrSetpoints[cur]);
+  wheels[0].setTargetRPM(arrSetpoints[cur]);
 }
 
 void move()
@@ -210,14 +210,14 @@ void move()
   // Logic to start the motor
   // For example, turn on the motor and LED
   digitalWrite(2, HIGH); // Assuming you have a LED connected
-  // wheelsSpeed[0].getMotor().Enable();
+  // wheels[0].getMotor().Enable();
   dir = -1;
 }
 
 void goStraight()
 {
-  digitalWrite(2, HIGH);              // Assuming you have a LED connected
-  // wheelsSpeed[0].getMotor().Enable(); // Enable the second motor.
+  digitalWrite(2, HIGH); // Assuming you have a LED connected
+  // wheels[0].getMotor().Enable(); // Enable the second motor.
   dir = 1;
 }
 
@@ -226,7 +226,7 @@ void stopMotor()
   // Logic to stop the motor
   // For example, turn off the motor and LED
   digitalWrite(2, LOW); // Turn off LED when motor is stopped
-  wheelsSpeed[0].getMotor().Disable();
+  wheels[0].getMotor().Disable();
 }
 
 void startServer()

@@ -4,6 +4,9 @@
 #include "Wheel.h"
 #include "util.h"
 
+#define LEFT_DIR 1
+#define RIGHT_DIR -1
+
 extern const int NUM_MOTORS;
 
 // PID  Velocity constants
@@ -25,16 +28,12 @@ extern motorPin motorPin3; // pinA, pinB, L_PWM, R_PWM
 extern motorPin motorPin4; // pinA, pinB, L_PWM, R_PWM
 
 // Wheel objects
-extern Wheel wheelsSpeed[];
+extern Wheel wheels[];
 
 // Declare the trigger interrupt function
-extern void triggerW1A();
-extern void triggerW1B();
-extern void triggerW2A();
-extern void triggerW2B();
-extern void triggerW3A();
-extern void triggerW3B();
-extern void triggerW4A();
-extern void triggerW4B();
+extern void triggerW1();
+extern void triggerW2();
+extern void triggerW3();
+extern void triggerW4();
 
 #endif // !__GLOBALSETTINGS_H__

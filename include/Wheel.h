@@ -23,10 +23,10 @@ private:
     double targetPosition;
 
     double pwm = 0;
+    int direction = 1;
 public:
     Wheel();
     Wheel(int pinA, int pinB, int L_PWM, int R_PWM);
-    Wheel(int pinA, int pinB, int L_PWM, int R_PWM, double currentRPM, double targetRPM, double Kp, double Ki, double Kd);
     // void initPIDVelocity(double currentRPM, double targetRPM, double Kp, double Ki, double Kd);
     void initEncoder();
     void initMotor();
@@ -53,14 +53,16 @@ public:
     volatile long getEncPosition();
     int getEncPinA();
     int getEncPinB();
-    int getPosition();
-    int getPWM();
+    void triggerInterrupt();
 
-    void triggerA();
-    void triggerB();
+    int getPWM();
+    int getDirection();
+    void setDirection(int direction);
     void setPWM(double pwm);
     void tuningRPM();
-    void info();
+    void tuningPosition();
+    void infoVelocity();
+    void infoPosition();
 
     ~Wheel();
 };
