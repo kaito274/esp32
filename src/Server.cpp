@@ -9,15 +9,14 @@
 #include "Motor.h"
 #include "GlobalSettings.h"
 
-
 // Replace with your network credentials
-static const char* ssid = "Hieu Huan";
-static const char* password = "68426842";
+static const char *ssid = "BS HUY - Deco";
+static const char *password = "khongcopass";
 
 // Create AsyncWebServer object on port 80
 static AsyncWebServer server(80);
 
-//HTML and CSS to build the web page
+// HTML and CSS to build the web page
 static const char index_html[] PROGMEM = R"rawliteral(
   <!DOCTYPE html>
   <html>
@@ -110,6 +109,10 @@ static const char index_html[] PROGMEM = R"rawliteral(
               <button id="moveButton" class="button-off"><i class="fa-solid fa-arrow-down"></i> MOVE</button>
             </p>
             <p>
+              // <a href="go_straight" ><button class="button-on"><i class="fa-solid fa-arrow-right"></i> GO STRAIGHT</button></a>
+              <button id="goStraight" class="button-off"><i class="fa-solid fa-arrow-right"></i> GO STRAIGHT</button>
+            </p>
+            <p>
               <a href="stop"><button class="button-stop"><i class="fa-solid fa-stop"></i> STOP</button></a>
             </p>
           </div>
@@ -119,6 +122,7 @@ static const char index_html[] PROGMEM = R"rawliteral(
       <script>
         // Get the move button
         const moveButton = document.getElementById('moveButton');
+        const goStraight = document.getElementById('goStraight');
 
         // When the button is pressed, send a request to start the motor
         moveButton.addEventListener('mousedown', function() {
@@ -127,6 +131,16 @@ static const char index_html[] PROGMEM = R"rawliteral(
             .then(data => {
               // Optionally, you can update the UI to reflect motor running
               moveButton.classList.add('button-on');  // Change button style (example)
+            });
+        });
+
+        // When the button is pressed, send a request to start the motor
+        goStraight.addEventListener('mousedown', function() {
+          fetch('/go_straight', { method: 'GET' })
+            .then(response => response.text())
+            .then(data => {
+              // Optionally, you can update the UI to reflect motor running
+              goStraight.classList.add('button-on');  // Change button style (example)
             });
         });
 
@@ -149,17 +163,28 @@ static const char index_html[] PROGMEM = R"rawliteral(
               moveButton.classList.remove('button-on');
             });
         });
+
+        goStraight.addEventListener('mouseup', function() {
+          fetch('/stop', { method: 'GET' })
+            .then(response => response.text())
+            .then(data => {
+              // Optionally, reset button style
+              goStraight.classList.remove('button-on');
+            });
+        });
       </script>
     </body>
   </html>
 )rawliteral";
 
 int speed = 50;
-void initWiFi() {
+void initWiFi()
+{
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   Serial.println("Connecting to WiFi ..");
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     Serial.print('.');
     delay(1000);
   }
@@ -170,49 +195,64 @@ int arrSetpoints[] = {50, 100, 150};
 int cur = 0;
 
 // change the speed of the motor
-void changeRPM(){
+void changeRPM()
+{
   cur = (cur + 1) % 3;
   Serial.print("Cur: ");
   Serial.println(cur);
   Serial.print("Setpoint: ");
   Serial.println(arrSetpoints[cur]);
-  wheelsSpeed[0].setSetpoint(arrSetpoints[cur]);  
+  wheelsSpeed[0].setTargetRPM(arrSetpoints[cur]);
 }
 
-void move() {
+void move()
+{
   // Logic to start the motor
   // For example, turn on the motor and LED
   digitalWrite(2, HIGH); // Assuming you have a LED connected
-  wheelsSpeed[0].getMotor().Enable();
+  // wheelsSpeed[0].getMotor().Enable();
+  dir = -1;
 }
 
-void stopMotor() {
+void goStraight()
+{
+  digitalWrite(2, HIGH);              // Assuming you have a LED connected
+  // wheelsSpeed[0].getMotor().Enable(); // Enable the second motor.
+  dir = 1;
+}
+
+void stopMotor()
+{
   // Logic to stop the motor
   // For example, turn off the motor and LED
   digitalWrite(2, LOW); // Turn off LED when motor is stopped
   wheelsSpeed[0].getMotor().Disable();
 }
 
+void startServer()
+{
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send_P(200, "text/html", index_html); });
 
-void startServer() {
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send_P(200, "text/html", index_html);
-  });
-
-  server.on("/change_rpm", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/change_rpm", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     changeRPM();
-    request->send_P(200, "text/html", index_html);
-  }); 
+    request->send_P(200, "text/html", index_html); });
 
-  server.on("/move", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/move", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     move();
-    request->send_P(200, "text/html", index_html);
-  });
+    request->send_P(200, "text/html", index_html); });
 
-  server.on("/stop", HTTP_GET, [](AsyncWebServerRequest *request) {
+  server.on("/go_straight", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    goStraight();
+    request->send_P(200, "text/html", index_html); });
+
+  server.on("/stop", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     stopMotor();
-    request->send_P(200, "text/html", index_html);
-  });
+    request->send_P(200, "text/html", index_html); });
 
   server.begin();
 }

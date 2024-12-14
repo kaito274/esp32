@@ -16,6 +16,7 @@ static int enable1Pin = 14;
 void initWiFi();
 void moveForward();
 void moveBackward();
+void goStraight();
 void stopMotor();
 void startServer();
 
