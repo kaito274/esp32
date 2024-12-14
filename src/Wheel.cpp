@@ -160,11 +160,11 @@ void Wheel::tuningPosition() {
 }
 
 void Wheel::infoVelocity() {
-    Serial.println("######### Wheel Velocity Info #########");
-    Serial.print("PWM: "); Serial.print(this->pwm);
-    Serial.print("\tPULSES/Encoder Values: "); Serial.print(this->getEncValue());
-    Serial.print("\tRPM: "); Serial.print(this->currentRPM);
-    Serial.print("\tERROR: "); Serial.println(this->computedPWMVelocity);
+    // Serial.println("######### Wheel Velocity Info #########");
+    Serial.print("PWM:"); Serial.print(this->pwm);
+    Serial.print("\tENCODER_VALUES:"); Serial.print(this->getEncValue());
+    Serial.print("\tRPM:"); Serial.print(this->currentRPM);
+    Serial.print("\tERROR:"); Serial.println(this->computedPWMVelocity);
 }
 
 void Wheel::infoPosition() {

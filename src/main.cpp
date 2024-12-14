@@ -8,35 +8,13 @@
 #include <vector>
 #define LED 2
 
-// One-second interval for measurements
+// interval for measurements
 int interval = 1000;
 
 // Counters for milliseconds during interval
 long previousMillis = 0;
 long currentMillis = 0;
 
-// volatile long posi = 0; // Position updated by the encoder
-// volatile long encoderValues = 0; // Encoder value updated by the encoder
-
-// // PID constants
-// double kp_ = 1.0;
-// double kd_ = 0.0;
-// double ki_ = 0.0;
-// // Declare PID variables
-// double input = 0;      // Current position (input for PID)
-// double output = 0;     // Output from PID (motor speed)
-// double setpoint = 0;   // Target position for the motor
-// // Define a type for function pointers (callback functions)
-// typedef void (*CallbackFunction)();
-// void updateEncoderB();
-// void updateEncoderA();
-
-// #define ENC_IN_A 4
-// #define ENC_IN_B 5
-
-// // Create a PID instance
-// PID myPID(&input, &output, &setpoint, kp_, ki_, kd_, DIRECT);
-// Motor motor1(15, 2); // EN, L_PWM, R_PWM
 
 void setup()
 {
@@ -50,13 +28,12 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(wheels[2].getEncPinA()), triggerW3, RISING);
   attachInterrupt(digitalPinToInterrupt(wheels[3].getEncPinA()), triggerW4, RISING);
 
-
+  // Enable the motor
   wheels[0].getMotor().Enable();
   
-
-  // TODO: TEST
   wheels[0].setTargetRPM(100);
-  wheels[0].setTargetPosition(333);
+  // wheels[0].setTargetPosition(333);
+
 }
 
 void loop()
