@@ -7,33 +7,57 @@
 
 class Wheel {
 private:
-    PID *pid;
+    PID *pidVelocity;
+    PID *pidPosition;
     Encoder *encoder;
     Motor *motor;
-    double input;  // Current position (input for PID)
-    double output; // PID output
-    double setpoint; // target position for the wheel
+
+    // PID Velocity constants
+    double currentRPM;  
+    double computedPWMVelocity; 
+    double targetRPM;
+
+    // PID Position constants
+    double currentPosition;
+    double computedPWMPosition;
+    double targetPosition;
+
     double pwm = 0;
 public:
     Wheel();
-    Wheel(int pinA, int pinB, int L_PWM, int R_PWM, double input, double setpoint, double Kp, double Ki, double Kd);
-    void initPID(double input, double setpoint, double Kp, double Ki, double Kd);
+    Wheel(int pinA, int pinB, int L_PWM, int R_PWM);
+    Wheel(int pinA, int pinB, int L_PWM, int R_PWM, double currentRPM, double targetRPM, double Kp, double Ki, double Kd);
+    // void initPIDVelocity(double currentRPM, double targetRPM, double Kp, double Ki, double Kd);
     void initEncoder();
     void initMotor();
-    PID getPID();
+    PID getPIDVelocity();
+    PID getPIDPosition();
     Encoder getEncoder();
     Motor getMotor();
-    int getInput();
-    int getOutput();
-    int getSetpoint();
-    volatile long getEncoderValue();
+
+    // PID Velocity functions
+    double getCurrentRPM();
+    double getComputedPWMVelocity();
+    double getTargetRPM();
+    void setCurrentRPM(double currentRPM);
+    void setTargetRPM(double targetRPM);
+
+    // PID Position functions
+    double getCurrentPosition();
+    double getComputedPWMPosition();
+    double getTargetPosition();
+    void setCurrentPosition(double currentPosition);
+    void setTargetPosition(double targetPosition);
+
+    volatile long getEncValue();
+    volatile long getEncPosition();
+    int getEncPinA();
+    int getEncPinB();
     int getPosition();
     int getPWM();
 
     void triggerA();
     void triggerB();
-    void setInput(double input);
-    void setSetpoint(double setpoint);
     void setPWM(double pwm);
     void tuningRPM();
     void info();
