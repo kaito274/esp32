@@ -2,10 +2,16 @@
 
 const int NUM_MOTORS = 1;
 
-// PID constants
-double kp = 1.0;
-double ki = 0.0;
-double kd = 0;
+// PID  Velocity constants
+double kpVelo = 1.0;
+double kiVelo = 0.0;
+double kdVelo = 0;
+
+// PID Position constants
+double kpPos = 1.0;
+double kiPos = 0.0;
+double kdPos = 0;
+
 
 int dir = 1;
 
@@ -17,10 +23,10 @@ motorPin motorPin4 = motorPin(32, 35, 25, 33); // pinA, pinB, L_PWM, R_PWM
 
 // Declare the trigger interrupt function
 Wheel wheelsSpeed[] = {
-  Wheel(motorPin1.pinA, motorPin1.pinB, motorPin1.L_PWM, motorPin1.R_PWM, 0, 0, kp, ki, kd),
-  Wheel(motorPin2.pinA, motorPin2.pinB, motorPin2.L_PWM, motorPin2.R_PWM, 0, 0, kp, ki, kd),
-  Wheel(motorPin3.pinA, motorPin3.pinB, motorPin3.L_PWM, motorPin3.R_PWM, 0, 0, kp, ki, kd),
-  Wheel(motorPin4.pinA, motorPin4.pinB, motorPin4.L_PWM, motorPin4.R_PWM, 0, 0, kp, ki, kd)
+  Wheel(motorPin1.pinA, motorPin1.pinB, motorPin1.L_PWM, motorPin1.R_PWM),
+  Wheel(motorPin2.pinA, motorPin2.pinB, motorPin2.L_PWM, motorPin2.R_PWM),
+  Wheel(motorPin3.pinA, motorPin3.pinB, motorPin3.L_PWM, motorPin3.R_PWM),
+  Wheel(motorPin4.pinA, motorPin4.pinB, motorPin4.L_PWM, motorPin4.R_PWM)
 };
 
 void triggerW1A() {wheelsSpeed[0].triggerA();};

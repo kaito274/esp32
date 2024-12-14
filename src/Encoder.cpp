@@ -1,12 +1,18 @@
 #include "Encoder.h"
 
-Encoder::Encoder(int pinA, int pinB) : pinA(pinA), pinB(pinB), position(0) {
-    pinMode(pinA, INPUT_PULLUP);
-    pinMode(pinB, INPUT_PULLUP);
+Encoder::Encoder(int pinA, int pinB) : pinA(pinA), pinB(pinB), position(0), encoderValue(0) {
+    pinMode(pinA, INPUT);
+    pinMode(pinB, INPUT);
 }
 
 void Encoder::triggerA() {
     encoderValue += 1;
+    int B = digitalRead(pinB);
+    if (B > 0) {
+        position++;
+    } else {
+        position--;
+    }
 }
 
 void Encoder::triggerB() {
@@ -18,8 +24,12 @@ void Encoder::triggerB() {
     }
 }
 
-int Encoder::getPosition() {
+volatile long Encoder::getPosition() {
     return position;
+}
+
+volatile long Encoder::getEncoderValue() {
+    return encoderValue;
 }
 
 int Encoder::getPinA() {
@@ -28,10 +38,6 @@ int Encoder::getPinA() {
 
 int Encoder::getPinB() {
     return pinB;
-}
-
-volatile long Encoder::getEncoderValue() {
-    return encoderValue;
 }
 
 void Encoder::resetEncoderValue() {

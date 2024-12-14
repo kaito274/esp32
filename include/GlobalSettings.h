@@ -6,10 +6,15 @@
 
 extern const int NUM_MOTORS;
 
-// PID constants
-extern double kp;
-extern double kd;
-extern double ki;
+// PID  Velocity constants
+extern double kpVelo;
+extern double kiVelo;
+extern double kdVelo;
+
+// PID Position constants
+extern double kpPos;
+extern double kiPos;
+extern double kdPos;
 
 extern int dir;
 

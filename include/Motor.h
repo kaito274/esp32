@@ -17,6 +17,7 @@ Unless required by applicable law or agreed to in writing, software distributed 
 class Motor
 {
   public:
+  Motor(uint8_t L_PWM, uint8_t R_PWM) : Motor(0, 0, L_PWM, R_PWM) {}
 	Motor(uint8_t EN, uint8_t L_PWM, uint8_t R_PWM) : Motor(EN, 0, L_PWM, R_PWM) {}
   Motor(uint8_t L_EN, uint8_t R_EN, uint8_t L_PWM, uint8_t R_PWM);
   void Enable();

@@ -9,24 +9,19 @@
 class Encoder {
 private: 
     int pinA, pinB;
-    volatile long encoderValue = 10;
-    int position;
-
-    // Static interrupt handler functions
-    // static void staticTriggerA();
-    // static void staticTriggerB();
+    volatile long encoderValue;
+    volatile long position;
 
 public:
     Encoder(int pinA, int pinB);
     void triggerA();
     void triggerB();
-    int getPosition();
+    volatile long getPosition();
+    volatile long getEncoderValue();
     int getPinA();
     int getPinB();
-    volatile long getEncoderValue();
     void resetEncoderValue();
     void resetPosition();
-
 };
 
 #endif
