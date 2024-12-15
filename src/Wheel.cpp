@@ -150,30 +150,25 @@ void Wheel::tuningPosition() {
     this->pwm = constrain((int)fabs(error), 0, 100); 
 
     // Determine the direction (sign of the output)
-    int dir = (error < 0) ? -1 : 1;
-    
-    if(dir > 0 ){
-      wheels[0].getMotor().TurnLeft(pwm);
-    } else {
-      wheels[0].getMotor().TurnRight(pwm);
-    }
+    this->direction = (error > 0) ? LEFT_DIR : RIGHT_DIR;
 }
 
 void Wheel::infoVelocity() {
     // Serial.println("######### Wheel Velocity Info #########");
-    Serial.print("PWM:"); Serial.print(this->pwm);
+    Serial.print("Target_RPM:"); Serial.print(this->getTargetRPM());
+    Serial.print("\tCurrent_RPM:"); Serial.print(this->currentRPM);
+    Serial.print("\tPWM:"); Serial.print(this->pwm);
     Serial.print("\tENCODER_VALUES:"); Serial.print(this->getEncValue());
-    Serial.print("\tRPM:"); Serial.print(this->currentRPM);
     Serial.print("\tERROR:"); Serial.println(this->computedPWMVelocity);
 }
 
 void Wheel::infoPosition() {
     // Serial.println("######### Wheel Position Info #########");
-    Serial.print("Target position: "); Serial.print(this->getTargetPosition());
-    Serial.print("\tCurrent position: "); Serial.print(this->getEncPosition());
-    Serial.print("\tDirection: "); Serial.print(this->direction);
-    Serial.print("\tMotor Power: "); Serial.print(this->pwm);
-    Serial.print("\tError: "); Serial.println(targetPosition - currentPosition);
+    Serial.print("Target_position:"); Serial.print(this->getTargetPosition());
+    Serial.print("\tCurrent_position:"); Serial.print(this->getEncPosition());
+    Serial.print("\tDirection:"); Serial.print(this->direction);
+    Serial.print("\tMotor_Power:"); Serial.print(this->pwm);
+    Serial.print("\tError:"); Serial.println(targetPosition - currentPosition);
 }
 
 Wheel::~Wheel() {
