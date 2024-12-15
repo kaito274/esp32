@@ -3,12 +3,12 @@
 const int NUM_MOTORS = 1;
 
 // PID  Velocity constants
-double kpVelo = 1.0;
+double kpVelo = 0.75;
 double kiVelo = 0.0;
 double kdVelo = 0;
 
 // PID Position constants
-double kpPos = 1.0;
+double kpPos = 0.5;
 double kiPos = 0.0;
 double kdPos = 0;
 

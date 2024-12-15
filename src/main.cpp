@@ -8,6 +8,9 @@
 #include <vector>
 #define LED 2
 
+// #define VELOCITY 0
+#define POSITION 1
+
 // interval for measurements
 int interval = 1000;
 
@@ -30,20 +33,25 @@ void setup()
 
   // Enable the motor
   wheels[0].getMotor().Enable();
-  
+
+#ifdef VELOCITY  
   wheels[0].setTargetRPM(100);
-  // wheels[0].setTargetPosition(333);
+#endif // VELOCITY
+
+#ifdef POSITION
+  wheels[0].setTargetPosition(333);
+#endif // POSITION
 
 }
 
 void loop()
 { 
-
+#ifdef VELOCITY
   // Velocity 
   currentMillis = millis();
   if (currentMillis - previousMillis > interval) {
-    wheels[0].tuningRPM();
     wheels[0].infoVelocity();
+    wheels[0].tuningRPM();
     if (dir == 1) {
       wheels[0].getMotor().TurnRight(wheels[0].getPWM());
     } else {
@@ -51,14 +59,16 @@ void loop()
     }
     previousMillis = currentMillis;
   }
-
-  // // Position
-  // wheels[0].tuningPosition();
-  // wheels[0].infoPosition();
-  // if (wheels[0].getDirection() == LEFT_DIR) {
-  //   wheels[0].getMotor().TurnLeft(wheels[0].getPWM());
-  // } else {
-  //   wheels[0].getMotor().TurnRight(wheels[0].getPWM());
-  // }
+#endif // VELOCITY
+#ifdef POSITION
+  // Position
+  wheels[0].infoPosition();
+  wheels[0].tuningPosition();
+  if (wheels[0].getDirection() == LEFT_DIR) {
+    wheels[0].getMotor().TurnLeft(wheels[0].getPWM());
+  } else {
+    wheels[0].getMotor().TurnRight(wheels[0].getPWM());
+  }
+ #endif // POSITION
 }
 
