@@ -5,14 +5,13 @@
 #include "Wheel.h"
 #include "GlobalSettings.h"
 #include <PID_v1.h>
-#include <vector>
 #define LED 2
 
-// #define VELOCITY 0
-#define POSITION 1
+#define VELOCITY 0
+// #define POSITION 1
 
 // interval for measurements
-int interval = 1000;
+int interval = 500;
 
 // Counters for milliseconds during interval
 long previousMillis = 0;
@@ -50,7 +49,6 @@ void loop()
   // Velocity 
   currentMillis = millis();
   if (currentMillis - previousMillis > interval) {
-    wheels[0].infoVelocity();
     wheels[0].tuningRPM();
     if (dir == 1) {
       wheels[0].getMotor().TurnRight(wheels[0].getPWM());
@@ -59,7 +57,9 @@ void loop()
     }
     previousMillis = currentMillis;
   }
+  wheels[0].infoVelocity();
 #endif // VELOCITY
+
 #ifdef POSITION
   // Position
   wheels[0].infoPosition();
@@ -69,6 +69,6 @@ void loop()
   } else {
     wheels[0].getMotor().TurnRight(wheels[0].getPWM());
   }
- #endif // POSITION
-}
+#endif // POSITION
 
+}

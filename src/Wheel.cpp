@@ -13,6 +13,7 @@ Wheel::Wheel(int pinA, int pinB, int L_PWM, int R_PWM) {
     this->pidVelocity = new PID(&this->currentRPM, &this->computedPWMVelocity, &this->targetRPM, kpVelo, kiVelo, kdVelo, DIRECT); 
     this->pidVelocity->SetMode(AUTOMATIC);
     this->pidVelocity->SetOutputLimits(-255, 255);
+    this->pidVelocity->SetSampleTime(500); // Set the sample time to 500ms
 
     // PID Position initialization
     this->currentPosition = 0;
@@ -158,7 +159,6 @@ void Wheel::infoVelocity() {
     Serial.print("Target_RPM:"); Serial.print(this->getTargetRPM());
     Serial.print("\tCurrent_RPM:"); Serial.print(this->currentRPM);
     Serial.print("\tPWM:"); Serial.print(this->pwm);
-    Serial.print("\tENCODER_VALUES:"); Serial.print(this->getEncValue());
     Serial.print("\tERROR:"); Serial.println(this->computedPWMVelocity);
 }
 
