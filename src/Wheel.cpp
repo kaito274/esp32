@@ -3,9 +3,11 @@
 
 Wheel::Wheel(){}
 
-Wheel::Wheel(int pinA, int pinB, int L_PWM, int R_PWM) {
+Wheel::Wheel(int id, int pinA, int pinB, int L_PWM, int R_PWM) {
+    this->id = id;
     this->encoder = new Encoder(pinA, pinB);
     this->motor = new Motor(L_PWM, R_PWM);
+    this->direction = 1;
 
     // PID Velocity initialization
     this->currentRPM = 0;
@@ -100,6 +102,10 @@ int Wheel::getEncPinB() {
     return this->encoder->getPinB();
 }
 
+void Wheel::resetEncValue() {
+    this->encoder->resetEncoderValue();
+}
+
 int Wheel::getPWM() {
     return this->pwm;
 }
@@ -132,17 +138,18 @@ void Wheel::setDirection(int direction) {
 void Wheel::tuningRPM() {
     double currentRPM = (float)this->getEncValue() * 60 / ENC_COUNT_REV;
     this->currentRPM = currentRPM;
+    this->pidVelocity->SetTunings(kpVelo, kiVelo, kdVelo);
     this->pidVelocity->Compute(); // Compute the PID output
     this->pwm += this->computedPWMVelocity;
     this->pwm = constrain(this->pwm, 0, 255);
-    this->encoder->resetEncoderValue();
+    // this->encoder->resetEncoderValue();
 }
 
 void Wheel::tuningPosition() {
 
     // noInterrupts(); // TODO: Check if this is necessary
     int currentPos = this->getEncPosition();
-    this->currentPosition = currentPos;
+    this->currentPosition = currentPos;     
     // interrupts();
     this->pidPosition->Compute(); // Compute the PID output
     double error = targetPosition - currentPosition;
@@ -151,24 +158,48 @@ void Wheel::tuningPosition() {
     this->pwm = constrain((int)fabs(error), 0, 100); 
 
     // Determine the direction (sign of the output)
-    this->direction = (error > 0) ? LEFT_DIR : RIGHT_DIR;
+    this->direction = (error > 0) ? RIGHT_DIR : LEFT_DIR; //TODO: Check if this is correct
 }
 
-void Wheel::infoVelocity() {
+String Wheel::infoVelocity() {
+    double currentRPM = (float)this->getEncValue() * 60 / ENC_COUNT_REV;
+
     // Serial.println("######### Wheel Velocity Info #########");
-    Serial.print("Target_RPM:"); Serial.print(this->getTargetRPM());
-    Serial.print("\tCurrent_RPM:"); Serial.print(this->currentRPM);
-    Serial.print("\tPWM:"); Serial.print(this->pwm);
-    Serial.print("\tERROR:"); Serial.println(this->computedPWMVelocity);
+    Serial.print("Wheel_ID:" + String(this->id));
+    Serial.print("\tTarget_RPM:"); Serial.print(this->getTargetRPM());
+    Serial.print("\tPulse:"); Serial.print(this->getEncValue());
+    Serial.print("\tCurrent_RPM:"); Serial.print(currentRPM);
+    Serial.print("\tDirection:"); Serial.print(this->direction == RIGHT_DIR ? "RIGHT" : "LEFT");
+    Serial.print("\tPWM:"); Serial.println(this->pwm);
+    // Serial.print("\tERROR:"); Serial.println(this->computedPWMVelocity);
+    String test = "Target_RPM:" + String(this->getTargetRPM()) 
+                + "\tCurrent_RPM:" + String(this->currentRPM) 
+                + "\tPWM:" + String(this->pwm) 
+                + "\tERROR:" + String(this->computedPWMVelocity);
+    return test;
 }
 
 void Wheel::infoPosition() {
     // Serial.println("######### Wheel Position Info #########");
-    Serial.print("Target_position:"); Serial.print(this->getTargetPosition());
+    Serial.print("Wheel_ID:" + String(this->id));
+    Serial.print("\tTarget_position:"); Serial.print(this->getTargetPosition());
     Serial.print("\tCurrent_position:"); Serial.print(this->getEncPosition());
-    Serial.print("\tDirection:"); Serial.print(this->direction);
+    Serial.print("\tDirection:"); Serial.print(this->direction == RIGHT_DIR ? "RIGHT" : "LEFT");
     Serial.print("\tMotor_Power:"); Serial.print(this->pwm);
     Serial.print("\tError:"); Serial.println(targetPosition - currentPosition);
+    // message = "Target_position:" + String(this->getTargetPosition()) 
+    //         + "\tCurrent_position:" + String(this->getEncPosition()) 
+    //         + "\tDirection:" + String(this->direction) 
+    //         + "\tMotor_Power:" + String(this->pwm) 
+    //         + "\tError:" + String(targetPosition - currentPosition) + "\n";
+}
+
+void Wheel::infoPin() {
+    // // Serial.println("######### Pin Info #########");
+    // Serial.print("pinA: "); Serial.print(this->encoder->getPinA()); 
+    // Serial.print("\tpinB: "); Serial.print(this->encoder->getPinB());
+    // Serial.print("\tL_PWM: "); Serial.print(this->motor->_L_PWM);
+    // Serial.print("\tR_PWM: "); Serial.println(this->motor->_R_PWM);
 }
 
 Wheel::~Wheel() {

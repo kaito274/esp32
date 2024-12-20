@@ -4,8 +4,9 @@
 #include "Wheel.h"
 #include "util.h"
 
-#define LEFT_DIR 1
-#define RIGHT_DIR -1
+#define RIGHT_DIR 1
+#define LEFT_DIR -1
+
 
 extern const int NUM_MOTORS;
 

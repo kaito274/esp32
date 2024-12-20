@@ -7,6 +7,8 @@
 
 class Wheel {
 private:
+    int id;
+
     PID *pidVelocity;
     PID *pidPosition;
     Encoder *encoder;
@@ -26,7 +28,7 @@ private:
     int direction = 1;
 public:
     Wheel();
-    Wheel(int pinA, int pinB, int L_PWM, int R_PWM);
+    Wheel(int id, int pinA, int pinB, int L_PWM, int R_PWM);
     // void initPIDVelocity(double currentRPM, double targetRPM, double Kp, double Ki, double Kd);
     void initEncoder();
     void initMotor();
@@ -53,6 +55,7 @@ public:
     volatile long getEncPosition();
     int getEncPinA();
     int getEncPinB();
+    void resetEncValue();
     void triggerInterrupt();
 
     int getPWM();
@@ -61,8 +64,9 @@ public:
     void setPWM(double pwm);
     void tuningRPM();
     void tuningPosition();
-    void infoVelocity();
+    String infoVelocity();
     void infoPosition();
+    void infoPin();
 
     ~Wheel();
 };
