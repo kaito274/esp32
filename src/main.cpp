@@ -4,22 +4,20 @@
 #include "Encoder.h"
 #include "Wheel.h"
 #include "GlobalSettings.h"
-// #include "config.h"
+#include "Car.h"
+#include "config.h"
 #include <WiFi.h>
 #include <PID_v1.h>
 
 #define LED 2
 
 // Server settings
-// #ifndef CONFIG_H
-// #define CONFIG_H
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+inline const char *ssid = "YOUR_SSID"; // Replace with your network credentials
+inline const char *password = "YOUR_PASSWORD"; // Replace with your network credentials
 
-const char *ssid_ = "@@@@";
-const char *password_ = "khongcopass";
-
-// #endif// Replace with your network credentials
-
-
+#endif// Replace with your network credentials
 
 #define VELOCITY 0
 // #define POSITION 1
@@ -46,7 +44,7 @@ TaskHandle_t sendDataTaskHandle;
 void sendDataTask(void *parameter)
 {
   Serial.println("Core 1");
-  WiFi.begin(ssid_, password_);
+  WiFi.begin(ssid, password);
 
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED)
@@ -77,34 +75,11 @@ void sendDataTask(void *parameter)
   }
 }
 
-void sendDataToClient(void *parameter);
-
-// // PID variables
-// double setpoint;    // Desired motor velocity (RPM)
-// double input;       // Current motor velocity (RPM)
-// double output;      // PID output (PWM value)
-
-// // PID tuning parameters
-// double Kp = 2.0, Ki = 5.0, Kd = 1.0;
-
-// // Create PID instance
-// PID myPID(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
-
-// // Variables for encoder
-// volatile long encoderCount = 0;  // Encoder pulse count
-// unsigned long prevTime = 0;      // Previous time for velocity calculation
-// double rpm = 0;                  // Motor velocity in RPM
-
-void move(double vx, double vy, double wz);
-
-
 void setup()
 {
   Serial.begin(115200);
 
   pinMode(LED, OUTPUT);
-
-  // move(0.0, 0.0, 1.0);
 
   // Attach the interrupt functions to the encoder pins
   attachInterrupt(digitalPinToInterrupt(wheels[0].getEncPinA()), triggerW0, RISING);
@@ -160,12 +135,6 @@ void setup()
   // // Start the serverd
   // server.begin();
 
-
-  // Initialize PID
-  // myPID.SetMode(AUTOMATIC);
-  // myPID.SetOutputLimits(0, 255);  // PWM range
-  // setpoint = 100;  // Set desired RPM
-
 }
 
 void SerialDataWrite();
@@ -179,58 +148,19 @@ void loop()
   // Velocity
   currentMillis = millis();
 
-  if (currentMillis - previousMillis > interval_velocity)
-  {
-  
-    wheels[0].tuningRPM();
-    wheels[1].tuningRPM();
-    wheels[2].tuningRPM();
-    wheels[3].tuningRPM();
-
-    if (wheels[0].getDirection() == RIGHT_DIR) {
-      wheels[0].getMotor().TurnRight(wheels[0].getPWM());
-    } else {
-      wheels[0].getMotor().TurnLeft(wheels[0].getPWM());
-    }
- 
-    if (wheels[1].getDirection() == RIGHT_DIR) {
-      wheels[1].getMotor().TurnRight(wheels[1].getPWM());
-    } else {
-      wheels[1].getMotor().TurnLeft(wheels[1].getPWM());
-    }
-    
-    if (wheels[2].getDirection() == RIGHT_DIR) {
-      wheels[2].getMotor().TurnRight(wheels[2].getPWM());
-    } else {
-      wheels[2].getMotor().TurnLeft(wheels[2].getPWM());
-    }
-
-    if (wheels[3].getDirection() == RIGHT_DIR) {
-      wheels[3].getMotor().TurnRight(wheels[3].getPWM());
-    } else {
-      wheels[3].getMotor().TurnLeft(wheels[3].getPWM());
+  if (currentMillis - previousMillis > interval_velocity) {
+    for(int i = 0; i < WHEEL_COUNT; i++){
+      wheels[i].tuningRPM();
+      
+      if (wheels[i].getDirection() == RIGHT_DIR) {
+        wheels[i].getMotor().TurnRight(wheels[i].getPWM());
+      } else {
+        wheels[i].getMotor().TurnLeft(wheels[i].getPWM());
+      }
+      wheels[i].infoVelocity();
+      wheels[i].resetEncValue(); // Reset encoder value
     }
     previousMillis = currentMillis;
-
-    // TODO: test Phuc
-    // Serial.print(wheels[3].getTargetRPM());
-    // Serial.print(" ");
-    // Serial.println(wheels[3].getComputedPWMVelocity());
-    // Serial.print(wheels[3].getPIDVelocity().GetKp());
-    // Serial.print(" ");
-    // Serial.print(wheels[3].getPIDVelocity().GetKi());
-    // Serial.print(" ");
-    // Serial.println(wheels[3].getPIDVelocity().GetKd());
-    wheels[0].infoVelocity();
-    wheels[1].infoVelocity();
-    wheels[2].infoVelocity();
-    wheels[3].infoVelocity();
-
-    // Reset encoder value
-    wheels[0].resetEncValue();
-    wheels[1].resetEncValue();
-    wheels[2].resetEncValue();
-    wheels[3].resetEncValue();
   }
   
   SerialDataWrite();
@@ -241,72 +171,19 @@ void loop()
   currentMillis = millis();
   if (currentMillis - previousMillis > interval_position)
   {
-    wheels[0].infoPosition();
-    wheels[0].tuningPosition();
-    if (wheels[0].getDirection() == LEFT_DIR) {
-      wheels[0].getMotor().TurnLeft(wheels[0].getPWM());
-    } else {
-      wheels[0].getMotor().TurnRight(wheels[0].getPWM());
+    for (int i = 0; i < WHEEL_COUNT; i++) {
+      wheels[i].infoPosition();
+      wheels[i].tuningPosition();
+      if (wheels[i].getDirection() == LEFT_DIR) {
+        wheels[i].getMotor().TurnLeft(wheels[i].getPWM());
+      } else {
+        wheels[i].getMotor().TurnRight(wheels[i].getPWM());
+      }
     }
-
-    // wheels[1].infoPosition();
-    // wheels[1].tuningPosition();
-    // if (wheels[1].getDirection() == LEFT_DIR) {
-    //   wheels[1].getMotor().TurnLeft(wheels[1].getPWM());
-    // } else {
-    //   wheels[1].getMotor().TurnRight(wheels[1].getPWM());
-    // }
-
-    // wheels[2].infoPosition();
-    // wheels[2].tuningPosition();
-    // if (wheels[2].getDirection() == LEFT_DIR) {
-    //   wheels[2].getMotor().TurnLeft(wheels[2].getPWM());
-    // } else {
-    //   wheels[2].getMotor().TurnRight(wheels[2].getPWM());
-    // }
-
-    // wheels[3].infoPosition();
-    // wheels[3].tuningPosition();
-    // if (wheels[3].getDirection() == LEFT_DIR) {
-    //   wheels[3].getMotor().TurnLeft(wheels[3].getPWM());
-    // } else {
-    //   wheels[3].getMotor().TurnRight(wheels[3].getPWM());
-    // }
     previousMillis = currentMillis;
   }
 
 #endif // POSITION
-
-
-  //  // Calculate RPM every 100 ms
-  // unsigned long currentTime = millis();
-  // if (currentTime - prevTime >= 100) {
-  //   // noInterrupts();
-  //   // long count = encoderCount;  // Copy encoder count
-  //   // encoderCount = 0;           // Reset encoder count
-  //   // interrupts();
-
-  //   // // Calculate RPM
-  //   // rpm = (count / 20.0) * (600.0 / 0.1);  // Assuming 20 pulses per revolution
-  //   // input = rpm;
-
-  //   // Compute PID output
-  //   myPID.Compute();
-
-  //   // // Apply motor control
-  //   // motorControl(output);
-
-  //   // Debugging
-  //   Serial.print("Setpoint: ");
-  //   Serial.print(setpoint);
-  //   Serial.print(" RPM, Input: ");
-  //   Serial.print(input);
-  //   Serial.print(" RPM, Output: ");
-  //   Serial.println(output);
-
-  //   prevTime = currentTime;
-  // }
-  // SerialDataWrite();
 
 }
 
@@ -342,114 +219,48 @@ void command_test(char option){
   switch (option)
   {
   case '1':
-    move(-velo_test, velo_test, 0.0);
+    mecanumCar.move(-velo_test, velo_test, 0.0);
     break;
   case '2':
-    move(-velo_test, 0, 0.0);
+    mecanumCar.move(-velo_test, 0, 0.0);
     break;
   case '3':
-    move(-velo_test, -velo_test, 0.0);
+    mecanumCar.move(-velo_test, -velo_test, 0.0);
     break;
   case '4':
-    move(0, velo_test, 0.0);
+    mecanumCar.move(0, velo_test, 0.0);
     break;
   case '5':
-    move(0.0, 0.0, 0.0);
+    mecanumCar.move(0.0, 0.0, 0.0);
     Serial.println("Stopped");
     break;
   case '6':
-    move(0, -velo_test, 0.0);
+    mecanumCar.move(0, -velo_test, 0.0);
     break;
   case '7':
-    move(velo_test, velo_test, 0.0);
+    mecanumCar.move(velo_test, velo_test, 0.0);
     break;
   case '8':
-    move(velo_test, 0, 0.0);
+    mecanumCar.move(velo_test, 0, 0.0);
     break;
   case '9':
-    move(velo_test, -velo_test, 0.0);
+    mecanumCar.move(velo_test, -velo_test, 0.0);
     break;
   case 'p': //rotate right
-    move(0, 0, -velo_rotate);
+    mecanumCar.move(0, 0, -velo_rotate);
     break;
   case 'o': //rotate left
-    move(0, 0, velo_rotate);
+    mecanumCar.move(0, 0, velo_rotate);
     break;
   case 'k': //drift left
-    move(0.0, velo_test, velo_rotate);
+    mecanumCar.move(0.0, velo_test, velo_rotate);
     break;
   case 'l': //drift rightp
-  
-    move(0.0, -velo_test, -velo_rotate);
+    mecanumCar.move(0.0, -velo_test, -velo_rotate);
     break;
   default:
-    move(0, 0, 0);
+    mecanumCar.move(0, 0, 0);
     Serial.println("Error");
     break;
   }
-}
-
-#define MAX_RPM 333  // Replace with your motor's max RPM
-#define MAX_PWM 255  // Replace with your motor's max PWM value
-
-
-
-void move(double vx, double vy, double wz)
-{
-  vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
-  double pwmFL, pwmFR, pwmRL, pwmRR;
-
-  // Mecanum car dimensions (example values, adjust as needed)
-  double lx = 0.3; // Distance from center to wheels along x-axis (in meters)
-  double ly = 0.2; // Distance from center to wheels along y-axis (in meters)
-  double r = 0.05; // Radius of the wheel (in meters)
-
-  // Calculate wheel angular velocities in rad/s
-  // Calculate wheel angular velocities in rad/s
-  double w_fl = (1 / r) * (vx - vy - (lx + ly) * wz);
-  double w_fr = -(1 / r) * (vx + vy + (lx + ly) * wz); // Flip direction
-  double w_rl = (1 / r) * (vx + vy - (lx + ly) * wz);
-  double w_rr = -(1 / r) * (vx - vy + (lx + ly) * wz); // Flip direction
-
-  // Convert angular velocities to RPM
-  double rpmFL = w_fl * 60 / (2 * M_PI);
-  double rpmFR = w_fr * 60 / (2 * M_PI);
-  double rpmRL = w_rl * 60 / (2 * M_PI);
-  double rpmRR = w_rr * 60 / (2 * M_PI);
-
-  // Cap RPM values to MAX_RPM
-  rpmFL = constrain(rpmFL, -MAX_RPM, MAX_RPM);
-  rpmFR = constrain(rpmFR, -MAX_RPM, MAX_RPM);
-  rpmRL = constrain(rpmRL, -MAX_RPM, MAX_RPM);
-  rpmRR = constrain(rpmRR, -MAX_RPM, MAX_RPM);
-
-  // Set direction of the wheels
-  int dirFL = (w_fl > 0) ? 1 : -1;
-  int dirFR = (w_fr > 0) ? 1 : -1;
-  int dirRL = (w_rl > 0) ? 1 : -1;
-  int dirRR = (w_rr > 0) ? 1 : -1;
-
-  // // Convert RPMs to PWM values (absolute values)
-  // pwmFL = map(abs(rpmFL), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmFR = map(abs(rpmFR), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmRL = map(abs(rpmRL), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmRR = map(abs(rpmRR), 0, MAX_RPM, 0, MAX_PWM);
-
-  // // Apply the computed PWM values to the motors
-  // wheels[0].setPWM(pwmFL);
-  // wheels[1].setPWM(pwmFR);
-  // wheels[2].setPWM(pwmRL);
-  // wheels[3].setPWM(pwmRR);
-
-  // TODO: Using PIDvelo_rotate
-  wheels[0].setTargetRPM(abs(rpmFL));
-  wheels[1].setTargetRPM(abs(rpmFR));
-  wheels[2].setTargetRPM(abs(rpmRL));
-  wheels[3].setTargetRPM(abs(rpmRR));
-
-  // Set the direction of the wheels
-  wheels[0].setDirection(dirFL);
-  wheels[1].setDirection(dirFR);
-  wheels[2].setDirection(dirRL);
-  wheels[3].setDirection(dirRR);
 }

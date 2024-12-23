@@ -2,10 +2,14 @@
 #define __GLOBALSETTINGS_H__
 
 #include "Wheel.h"
+#include "Car.h"
 #include "util.h"
 
 #define RIGHT_DIR 1
 #define LEFT_DIR -1
+#define LX 0.3 // Distance from center to wheels along x-axis (in meters)
+#define LY 0.2  // Distance from center to wheels along y-axis (in meters)
+#define WHEEL_RADIUS 0.05  // Radius of the wheel (in meters)
 
 
 extern const int NUM_MOTORS;
@@ -30,6 +34,9 @@ extern motorPin motorPin3; // pinA, pinB, L_PWM, R_PWM
 
 // Wheel objects
 extern Wheel wheels[];
+
+// Mecanum car object
+extern Car mecanumCar;
 
 // Declare the trigger interrupt function
 extern void triggerW0();

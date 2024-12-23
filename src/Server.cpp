@@ -6,18 +6,15 @@
 *********/
 
 #include "Server.h"
-#include "Motor.h"
-#include "GlobalSettings.h"
-#include "config.h"
 
 // Server settings
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
-const char *ssid = "YOUR_SSID";
-const char *password = "YOUR_PASSWORD";
+inline const char *ssid = "YOUR_SSID"; // Replace with your network credentials
+inline const char *password = "YOUR_PASSWORD"; // Replace with your network credentials
 
-#endif// Replace with your network credentials
+#endif // __CONFIG_H__
 
 
 // Create AsyncWebServer object on port 80

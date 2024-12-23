@@ -31,7 +31,6 @@ motorPin motorPin3 = motorPin(32, 35, 13, 14); // C2, C1, L_PWM, R_PWM
 // Left < 0
 
 
-// Declare the trigger interrupt function
 Wheel wheels[] = {
     Wheel(0, motorPin0.pinA, motorPin0.pinB, motorPin0.L_PWM, motorPin0.R_PWM),
     Wheel(1, motorPin1.pinA, motorPin1.pinB, motorPin1.L_PWM, motorPin1.R_PWM),
@@ -39,6 +38,9 @@ Wheel wheels[] = {
     Wheel(3, motorPin3.pinA, motorPin3.pinB, motorPin3.L_PWM, motorPin3.R_PWM)
 };
 
+Car mecanumCar(LX, LY, WHEEL_RADIUS, wheels);
+
+// Declare the trigger interrupt function
 void triggerW0() { wheels[0].triggerInterrupt(); };
 void triggerW1() { wheels[1].triggerInterrupt(); };
 void triggerW2() { wheels[2].triggerInterrupt(); };
