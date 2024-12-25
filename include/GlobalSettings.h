@@ -37,4 +37,15 @@ extern void triggerW1();
 extern void triggerW2();
 extern void triggerW3();
 
+typedef enum {
+    OMNIDIRECTIONAL,
+    ROTATIONAL
+} movement_t;
+
+typedef enum {
+    JOYSTICK_MANUAL,
+    BUTTONS_MANUAL,
+    BUTTONS_AUTO
+} operation_mode_t;
+
 #endif // !__GLOBALSETTINGS_H__

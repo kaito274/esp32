@@ -4,9 +4,11 @@
 #include "Encoder.h"
 #include "Wheel.h"
 #include "GlobalSettings.h"
+// #include "JSON_UARTReader.h"
 // #include "config.h"
 #include <WiFi.h>
 #include <PID_v1.h>
+#include <ArduinoJson.h>
 
 #define LED 2
 
@@ -20,10 +22,14 @@ const char *password_ = "khongcopass";
 // #endif// Replace with your network credentials
 
 
-
+#define UART_BUFFER_SIZE 256
 #define VELOCITY 0
 // #define POSITION 1
 
+HardwareSerial camSerial(2);
+uint8_t buffer[UART_BUFFER_SIZE];
+// JSON_UARTReader uart_reader(camSerial, 115200, 16, 17);
+JsonDocument doc;
 
 // interval for measurements
 int interval_velocity = 1000;
@@ -101,8 +107,11 @@ void move(double vx, double vy, double wz);
 void setup()
 {
   Serial.begin(115200);
-
+  camSerial.begin(115200, SERIAL_8N1, 16, 17);
   pinMode(LED, OUTPUT);
+  pinMode(26, OUTPUT);
+  pinMode(27, OUTPUT);
+
 
   // move(0.0, 0.0, 1.0);
 
@@ -182,11 +191,12 @@ void loop()
   if (currentMillis - previousMillis > interval_velocity)
   {
   
-    wheels[0].tuningRPM();
-    wheels[1].tuningRPM();
-    wheels[2].tuningRPM();
-    wheels[3].tuningRPM();
-
+    // wheels[0].tuningRPM();
+    // wheels[1].tuningRPM();
+    // wheels[2].tuningRPM();
+    // wheels[3].tuningRPM();
+      // analogWrite(26, 100);
+      // analogWrite(27, 100);
     if (wheels[0].getDirection() == RIGHT_DIR) {
       wheels[0].getMotor().TurnRight(wheels[0].getPWM());
     } else {
@@ -276,6 +286,60 @@ void loop()
   }
 
 #endif // POSITION
+
+  // DeserializationError error = uart_reader.read(doc);
+  size_t bytes_read = 0;
+  while (camSerial.available() > 0 && bytes_read < UART_BUFFER_SIZE - 1) {
+    buffer[bytes_read] = camSerial.read();
+    ++bytes_read;
+  }
+
+  buffer[bytes_read] = '\0';
+  DeserializationError error = deserializeJson(doc, buffer);
+  // if (error) {
+  //   Serial.print(F("deserializeJson() failed: "));
+  //   Serial.println(error.c_str());
+  // } else {
+  if (!error) {
+    const movement_t mv_type = doc["t"];
+
+    switch (mv_type) {
+      case (OMNIDIRECTIONAL): {
+        const operation_mode_t op_type = doc["m"];
+
+        switch (op_type) {
+          case (BUTTONS_MANUAL): {
+            const double vx = doc["x"], vy = doc["y"];
+            const uint8_t throttle = doc["th"];
+
+            Serial.print(vx);
+            Serial.print(" ");
+            Serial.print(vy);
+            Serial.print(" ");
+            Serial.print(throttle);
+            Serial.println();
+
+            move(vx* 0.2 , vy*0.2, 0);
+
+            break;
+          }
+
+          default: {
+            Serial.println("unknown operaiton mode");
+          }
+        }
+
+        break;
+      }
+      case (ROTATIONAL): {
+        
+        break;
+      }
+      default: {
+        Serial.println("unknown movement type");
+      }
+    }
+  }
 
 
   //  // Calculate RPM every 100 ms
@@ -418,10 +482,10 @@ void move(double vx, double vy, double wz)
   double rpmRR = w_rr * 60 / (2 * M_PI);
 
   // Cap RPM values to MAX_RPM
-  rpmFL = constrain(rpmFL, -MAX_RPM, MAX_RPM);
-  rpmFR = constrain(rpmFR, -MAX_RPM, MAX_RPM);
-  rpmRL = constrain(rpmRL, -MAX_RPM, MAX_RPM);
-  rpmRR = constrain(rpmRR, -MAX_RPM, MAX_RPM);
+  // rpmFL = constrain(rpmFL, -MAX_RPM, MAX_RPM);
+  // rpmFR = constrain(rpmFR, -MAX_RPM, MAX_RPM);
+  // rpmRL = constrain(rpmRL, -MAX_RPM, MAX_RPM);
+  // rpmRR = constrain(rpmRR, -MAX_RPM, MAX_RPM);
 
   // Set direction of the wheels
   int dirFL = (w_fl > 0) ? 1 : -1;
@@ -430,22 +494,22 @@ void move(double vx, double vy, double wz)
   int dirRR = (w_rr > 0) ? 1 : -1;
 
   // // Convert RPMs to PWM values (absolute values)
-  // pwmFL = map(abs(rpmFL), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmFR = map(abs(rpmFR), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmRL = map(abs(rpmRL), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmRR = map(abs(rpmRR), 0, MAX_RPM, 0, MAX_PWM);
+  pwmFL = map(abs(rpmFL), 0, MAX_RPM, 0, MAX_PWM);
+  pwmFR = map(abs(rpmFR), 0, MAX_RPM, 0, MAX_PWM);
+  pwmRL = map(abs(rpmRL), 0, MAX_RPM, 0, MAX_PWM);
+  pwmRR = map(abs(rpmRR), 0, MAX_RPM, 0, MAX_PWM);
 
   // // Apply the computed PWM values to the motors
-  // wheels[0].setPWM(pwmFL);
-  // wheels[1].setPWM(pwmFR);
-  // wheels[2].setPWM(pwmRL);
-  // wheels[3].setPWM(pwmRR);
+  wheels[0].setPWM(pwmFL);
+  wheels[1].setPWM(pwmFR);
+  wheels[2].setPWM(pwmRL);
+  wheels[3].setPWM(pwmRR);
 
   // TODO: Using PIDvelo_rotate
-  wheels[0].setTargetRPM(abs(rpmFL));
-  wheels[1].setTargetRPM(abs(rpmFR));
-  wheels[2].setTargetRPM(abs(rpmRL));
-  wheels[3].setTargetRPM(abs(rpmRR));
+  // wheels[0].setTargetRPM(abs(rpmFL));
+  // wheels[1].setTargetRPM(abs(rpmFR));
+  // wheels[2].setTargetRPM(abs(rpmRL));
+  // wheels[3].setTargetRPM(abs(rpmRR));
 
   // Set the direction of the wheels
   wheels[0].setDirection(dirFL);
