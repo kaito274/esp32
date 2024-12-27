@@ -319,7 +319,8 @@ void loop()
             Serial.print(throttle);
             Serial.println();
 
-            move(vx* 0.2 , vy*0.2, 0);
+            // move(vx*0.2 , vy*0.2, 0);
+            move(vy*0.2 , -vx*0.2, 0);
 
             break;
           }
