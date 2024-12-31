@@ -71,42 +71,57 @@ def read_serial_data():
                     target_rpms[wheel_id] = target_rpm
                     pwms[wheel_id] = pwm_value
 
-# Function to update the plot with new data
-def update_plot(frame):
-    global x, rpms, pwms, target_rpms, wheels_data
-    with data_lock:  # Acquire lock to safely access shared data
-        for i in range(0, NUM_WHEELS):
-            # Append the new data for plotting
-            wheels_data[i]['x_data'].append(x[i])
-            wheels_data[i]['rpm_data'].append(rpms[i])
-            wheels_data[i]['pwm_data'].append(pwms[i])
+# Initialize data structures for each wheel
+lines = [[None, None] for _ in range(NUM_WHEELS)]  # To store line objects for RPM and PWM
 
-    for i in range(0, NUM_WHEELS):
-        # Clear the RPM axis before updating the plot
-        axs[i, 0].cla()
-        axs[i, 1].cla()
-
-        # Plot the RPM data
-        axs[i, 0].plot(wheels_data[i]['x_data'], wheels_data[i]['rpm_data'], label=f"RPM {i}", color=f"C{i}")
-        axs[i, 0].axhline(y=wheels_data[i]['target_rpm'], color='red', linestyle='--', label=f"Target RPM {i} ({wheels_data[i]['target_rpm']})")
+def initialize_plot():
+    for i in range(NUM_WHEELS):
+        # RPM plot
+        lines[i][0], = axs[i, 0].plot([], [], label=f"RPM {i}", color=f"C{i}")
+        axs[i, 0].axhline(y=wheels_data[i]['target_rpm'], color='red', linestyle='--', label=f"Target RPM {i}")
         axs[i, 0].set_xlabel("Time (s)")
         axs[i, 0].set_ylabel("RPM")
         axs[i, 0].set_title(f"Real-time Plot of RPM {i}")
         axs[i, 0].legend(loc="upper left")
 
-        # Plot the PWM data
-        axs[i, 1].plot(wheels_data[i]['x_data'], wheels_data[i]['pwm_data'], label=f"PWM {i}", color=f"C{i}")
+        # PWM plot
+        lines[i][1], = axs[i, 1].plot([], [], label=f"PWM {i}", color=f"C{i}")
         axs[i, 1].set_xlabel("Time (s)")
         axs[i, 1].set_ylabel("PWM")
         axs[i, 1].set_title(f"Real-time Plot of PWM {i}")
         axs[i, 1].legend(loc="upper left")
+
+def update_plot(frame):
+    global x, rpms, pwms, wheels_data
+
+    with data_lock:  # Acquire lock to safely access shared data
+        for i in range(NUM_WHEELS):
+            # Update data for plotting
+            wheels_data[i]['x_data'].append(x[i])
+            wheels_data[i]['rpm_data'].append(rpms[i])
+            wheels_data[i]['pwm_data'].append(pwms[i])
+
+            # Update RPM line
+            lines[i][0].set_data(wheels_data[i]['x_data'], wheels_data[i]['rpm_data'])
+            axs[i, 0].relim()  # Recompute limits
+            axs[i, 0].autoscale_view()  # Autoscale view
+            # axs[i, 0].set_ylim(-10, 400)  # Set a fixed y-axis range for RPM
+
+
+            # Update PWM line
+            lines[i][1].set_data(wheels_data[i]['x_data'], wheels_data[i]['pwm_data'])
+            axs[i, 1].relim()  # Recompute limits
+            axs[i, 1].autoscale_view()  # Autoscale view
+            # axs[i, 1].set_ylim(-10, 270)
+
+# Initialize plot elements
+initialize_plot()
 
 # Start the thread to read serial data
 serial_thread = threading.Thread(target=read_serial_data, daemon=True)
 serial_thread.start()
 
 # Create the animation
-# ani = animation.FuncAnimation(fig, update_plot, interval=100, blit=False)
 ani = animation.FuncAnimation(fig, update_plot, interval=100, blit=False)
 
 # Show the plot
