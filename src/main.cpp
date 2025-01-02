@@ -16,8 +16,8 @@
 // #ifndef CONFIG_H
 // #define CONFIG_H
 
-const char *ssid_ = "@@@@";
-const char *password_ = "khongcopass";
+const char *ssid_ = "POCO";
+const char *password_ = "12345678";
 
 // #endif// Replace with your network credentials
 
@@ -75,8 +75,12 @@ void sendDataTask(void *parameter)
     {
       while (client.connected())
       {
-        Serial.println(message);
-        client.print(message);
+        // Serial.println(message);
+        for(int i = 0; i < 4; i++){
+          client.println(test_messages[i]);
+          delay(50);
+        }
+        // client.print(message);
         delay(50);
       }
     }
@@ -140,34 +144,34 @@ void setup()
 
 
   // TODO: Testing PID plot
-    // Create the task for sending data, pinned to Core 1
-  // xTaskCreatePinnedToCore(
-  //   sendDataTask,    // Task function
-  //   "SendDataTask",  // Name of the task
-  //   10000,           // Stack size (in words)
-  //   NULL,            // Task parameter
-  //   5,               // Priority (higher value = higher priority)
-  //   &sendDataTaskHandle, // Task handle
-  //   1                // Core to run the task (0 = Core 0, 1 = Core 1)
-  // );
+  // Create the task for sending data, pinned to Core 1
+  xTaskCreatePinnedToCore(
+    sendDataTask,    // Task function
+    "SendDataTask",  // Name of the task
+    10000,           // Stack size (in words)
+    NULL,            // Task parameter
+    5,               // Priority (higher value = higher priority)
+    &sendDataTaskHandle, // Task handle
+    1                // Core to run the task (0 = Core 0, 1 = Core 1)
+  );
 
   // TODO: ???
   // Serial.begin(115200);
-  // WiFi.begin(ssid_, password_);
+  WiFi.begin(ssid_, password_);
 
-  // // Wait for connection
-  // while (WiFi.status() != WL_CONNECTED)
-  // {
-  //   delay(1000);
-  //   Serial.println("Connecting to WiFi...");
-  // }
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
 
-  // Serial.println("Connected to WiFi!");
-  // Serial.print("ESP32 IP Address: ");
-  // Serial.println(WiFi.localIP());
+  Serial.println("Connected to WiFi!");
+  Serial.print("ESP32 IP Address: ");
+  Serial.println(WiFi.localIP());
 
-  // // Start the serverd
-  // server.begin();
+  // Start the serverd
+  server.begin();
 
 
   // Initialize PID
@@ -191,10 +195,10 @@ void loop()
   if (currentMillis - previousMillis > interval_velocity)
   {
   
-    // wheels[0].tuningRPM();
-    // wheels[1].tuningRPM();
-    // wheels[2].tuningRPM();
-    // wheels[3].tuningRPM();
+    wheels[0].tuningRPM();
+    wheels[1].tuningRPM();
+    wheels[2].tuningRPM();
+    wheels[3].tuningRPM();
       // analogWrite(26, 100);
       // analogWrite(27, 100);
     if (wheels[0].getDirection() == RIGHT_DIR) {
@@ -320,7 +324,7 @@ void loop()
             Serial.println();
 
             // move(vx*0.2 , vy*0.2, 0);
-            move(vy*0.2 , -vx*0.2, 0);
+            move(vy*0.2, -vx*0.2, 0);
 
             break;
           }
@@ -461,7 +465,7 @@ void command_test(char option){
 
 void move(double vx, double vy, double wz)
 {
-  vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
+  // vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
   double pwmFL, pwmFR, pwmRL, pwmRR;
 
   // Mecanum car dimensions (example values, adjust as needed)
@@ -483,10 +487,10 @@ void move(double vx, double vy, double wz)
   double rpmRR = w_rr * 60 / (2 * M_PI);
 
   // Cap RPM values to MAX_RPM
-  // rpmFL = constrain(rpmFL, -MAX_RPM, MAX_RPM);
-  // rpmFR = constrain(rpmFR, -MAX_RPM, MAX_RPM);
-  // rpmRL = constrain(rpmRL, -MAX_RPM, MAX_RPM);
-  // rpmRR = constrain(rpmRR, -MAX_RPM, MAX_RPM);
+  rpmFL = constrain(rpmFL, -MAX_RPM, MAX_RPM);
+  rpmFR = constrain(rpmFR, -MAX_RPM, MAX_RPM);
+  rpmRL = constrain(rpmRL, -MAX_RPM, MAX_RPM);
+  rpmRR = constrain(rpmRR, -MAX_RPM, MAX_RPM);
 
   // Set direction of the wheels
   int dirFL = (w_fl > 0) ? 1 : -1;
@@ -495,22 +499,22 @@ void move(double vx, double vy, double wz)
   int dirRR = (w_rr > 0) ? 1 : -1;
 
   // // Convert RPMs to PWM values (absolute values)
-  pwmFL = map(abs(rpmFL), 0, MAX_RPM, 0, MAX_PWM);
-  pwmFR = map(abs(rpmFR), 0, MAX_RPM, 0, MAX_PWM);
-  pwmRL = map(abs(rpmRL), 0, MAX_RPM, 0, MAX_PWM);
-  pwmRR = map(abs(rpmRR), 0, MAX_RPM, 0, MAX_PWM);
+  // pwmFL = map(abs(rpmFL), 0, MAX_RPM, 0, MAX_PWM);
+  // pwmFR = map(abs(rpmFR), 0, MAX_RPM, 0, MAX_PWM);
+  // pwmRL = map(abs(rpmRL), 0, MAX_RPM, 0, MAX_PWM);
+  // pwmRR = map(abs(rpmRR), 0, MAX_RPM, 0, MAX_PWM);
 
   // // Apply the computed PWM values to the motors
-  wheels[0].setPWM(pwmFL);
-  wheels[1].setPWM(pwmFR);
-  wheels[2].setPWM(pwmRL);
-  wheels[3].setPWM(pwmRR);
+  // wheels[0].setPWM(pwmFL);
+  // wheels[1].setPWM(pwmFR);
+  // wheels[2].setPWM(pwmRL);
+  // wheels[3].setPWM(pwmRR);
 
   // TODO: Using PIDvelo_rotate
-  // wheels[0].setTargetRPM(abs(rpmFL));
-  // wheels[1].setTargetRPM(abs(rpmFR));
-  // wheels[2].setTargetRPM(abs(rpmRL));
-  // wheels[3].setTargetRPM(abs(rpmRR));
+  wheels[0].setTargetRPM(abs(rpmFL));
+  wheels[1].setTargetRPM(abs(rpmFR));
+  wheels[2].setTargetRPM(abs(rpmRL));
+  wheels[3].setTargetRPM(abs(rpmRR));
 
   // Set the direction of the wheels
   wheels[0].setDirection(dirFL);

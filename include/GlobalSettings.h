@@ -3,6 +3,7 @@
 
 #include "Wheel.h"
 #include "util.h"
+#include <vector>
 
 #define RIGHT_DIR 1
 #define LEFT_DIR -1
@@ -22,6 +23,8 @@ extern double kdPos;
 
 extern int dir;
 extern String message;
+extern std::vector<String> test_messages;
+
 // Pin configurations for motors
 extern motorPin motorPin0; // pinA, pinB, L_PWM, R_PWM
 extern motorPin motorPin1; // pinA, pinB, L_PWM, R_PWM

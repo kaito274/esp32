@@ -15,6 +15,7 @@ double kdPos = 0;
 int dir = 1;
 
 String message = "";
+std::vector<String> test_messages = {"", "", "", ""};
 // Wheel[0] : FL
 // Wheel[1] : FR
 // Wheel[2] : RL
