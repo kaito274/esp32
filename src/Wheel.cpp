@@ -178,7 +178,7 @@ String Wheel::infoVelocity() {
                 + "\tERROR:" + String(this->computedPWMVelocity);
 
     message = "Wheel_ID:" + String(this->id)
-            +  "Target_RPM:" + String(this->getTargetRPM()) 
+            +  "\tTarget_RPM:" + String(this->getTargetRPM()) 
             + "\tCurrent_RPM:" + String(this->currentRPM) 
             + "\tPWM:" + String(this->pwm);
     test_messages[this->id] ="Wheel_ID:" + String(this->id)

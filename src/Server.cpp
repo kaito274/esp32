@@ -14,8 +14,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-const char *ssid = "YOUR_SSID";
-const char *password = "YOUR_PASSWORD";
+// const char *ssid = "YOUR_SSID";
+// const char *password = "YOUR_PASSWORD";
 
 #endif// Replace with your network credentials
 

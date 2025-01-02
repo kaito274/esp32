@@ -16,8 +16,8 @@
 // #ifndef CONFIG_H
 // #define CONFIG_H
 
-const char *ssid_ = "POCO";
-const char *password_ = "12345678";
+const char *ssid_ = "@@@@";
+const char *password_ = "khongcopass";
 
 // #endif// Replace with your network credentials
 
@@ -78,10 +78,10 @@ void sendDataTask(void *parameter)
         // Serial.println(message);
         for(int i = 0; i < 4; i++){
           client.println(test_messages[i]);
-          delay(50);
+          delay(150);
         }
         // client.print(message);
-        delay(50);
+        delay(150);
       }
     }
   }
@@ -150,7 +150,7 @@ void setup()
     "SendDataTask",  // Name of the task
     10000,           // Stack size (in words)
     NULL,            // Task parameter
-    5,               // Priority (higher value = higher priority)
+    10,               // Priority (higher value = higher priority)
     &sendDataTaskHandle, // Task handle
     1                // Core to run the task (0 = Core 0, 1 = Core 1)
   );
@@ -174,10 +174,7 @@ void setup()
   server.begin();
 
 
-  // Initialize PID
-  // myPID.SetMode(AUTOMATIC);
-  // myPID.SetOutputLimits(0, 255);  // PWM range
-  // setpoint = 100;  // Set desired RPM
+
 
 }
 
