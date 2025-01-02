@@ -15,6 +15,7 @@ def update_position(frame):
     new_x = x_positions[-1] + random.uniform(-1, 1) if x_positions else 0
     new_y = y_positions[-1] + random.uniform(-1, 1) if y_positions else 0
     new_direction = directions[-1] + random.uniform(-30, 30) if directions else 0  # Random direction change
+    # new_direction = 180
 
     x_positions.append(new_x)
     y_positions.append(new_y)

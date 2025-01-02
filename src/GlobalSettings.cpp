@@ -16,10 +16,10 @@ int dir = 1;
 
 String message = "";
 // Pin configurations for motors
-motorPin motorPin0 = motorPin(4, 5, 15, 2);    // C2, C1, L_PWM, R_PWM
-motorPin motorPin1 = motorPin(25, 33, 27, 26); // C2, C1, L_PWM, R_PWM
-motorPin motorPin2 = motorPin(21, 22, 18, 19); // C2, C1, L_PWM, R_PWM
-motorPin motorPin3 = motorPin(32, 35, 13, 14); // C2, C1, L_PWM, R_PWM
+// motorPin motorPin0 = motorPin(4, 5, 15, 2);    // C2, C1, L_PWM, R_PWM
+// motorPin motorPin1 = motorPin(25, 33, 27, 26); // C2, C1, L_PWM, R_PWM
+// motorPin motorPin2 = motorPin(21, 22, 18, 19); // C2, C1, L_PWM, R_PWM
+// motorPin motorPin3 = motorPin(32, 35, 13, 14); // C2, C1, L_PWM, R_PWM
 
 // Wheel[0] : FL
 // Wheel[1] : FR
@@ -30,6 +30,13 @@ motorPin motorPin3 = motorPin(32, 35, 13, 14); // C2, C1, L_PWM, R_PWM
 // Right > 0
 // Left < 0
 
+
+motorPin motorPin0 = motorPin(4, 5, 15, 2);  // pinA, pinB, L_PWM, R_PWM
+// motorPin motorPin1 = motorPin(25, 33, 27, 26);  // pinA, pinB, L_PWM, R_PWM
+motorPin motorPin1 = motorPin(13, 14, 27, 26);  // pinA, pinB, L_PWM, R_PWM
+motorPin motorPin2 = motorPin(21, 22, 18, 19);  // pinA, pinB, L_PWM, R_PWM
+// motorPin motorPin3 = motorPin(32, 35, 13, 14);  // pinA, pinB, L_PWM, R_PWM
+motorPin motorPin3 = motorPin(32, 35, 25, 33);  // pinA, pinB, L_PWM, R_PWM
 
 Wheel wheels[] = {
     Wheel(0, motorPin0.pinA, motorPin0.pinB, motorPin0.L_PWM, motorPin0.R_PWM),

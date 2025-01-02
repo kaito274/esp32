@@ -1,14 +1,24 @@
-import serial
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import time
 import collections
+import matplotlib.animation as animation
 import threading
 import re
+import socket
 
-# Open the serial port (make sure the port is correct)
-ser = serial.Serial('COM5', 115200)  # Replace 'COM4' with your port
-time.sleep(2)  # Wait for ESP32 to reset
+# Replace with your ESP32's IP address
+ESP32_IP = "192.168.215.63"  # Example IP address (replace with actual)
+PORT = 8080
+
+server_ip = ESP32_IP
+port = PORT
+
+# Create a socket object
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Connect to the ESP32 server
+client_socket.connect((server_ip, port))
+print(f"Connected to server at {server_ip}:{port}")
 
 NUM_WHEELS = 4  # Number of wheels to plot
 
@@ -37,8 +47,9 @@ data_lock = threading.Lock()  # Lock to prevent race conditions
 def read_serial_data():
     global x, rpms, pwms, target_rpms
     while True:
-        line = ser.readline().decode('utf-8', errors='ignore').strip()
-
+        # line = ser.readline().decode('utf-8', errors='ignore').strip()
+        line = client_socket.recv(1024).decode('utf-8')
+        print(line)
         if line.startswith("Wheel_ID:"):
             # Extract data for each wheel
             parts = line.split()
@@ -64,6 +75,7 @@ def read_serial_data():
                         match = re.search(numerical, part)
                         if match:
                             pwm_value = float(match.group(0))
+                print(wheel_id, current_rpm, target_rpm, pwm_value)
 
                 if wheel_id >= 0 and wheel_id < NUM_WHEELS:
                     x[wheel_id] += 1  # Increment the x (time) value
@@ -104,8 +116,8 @@ def update_plot(frame):
             # Update RPM line
             lines[i][0].set_data(wheels_data[i]['x_data'], wheels_data[i]['rpm_data'])
             axs[i, 0].relim()  # Recompute limits
-            axs[i, 0].autoscale_view()  # Autoscale view
-            # axs[i, 0].set_ylim(-10, 400)  # Set a fixed y-axis range for RPM
+            # axs[i, 0].autoscale_view()  # Autoscale view
+            axs[i, 0].set_ylim(-10, 400)  # Set a fixed y-axis range for RPM
 
 
             # Update PWM line
@@ -129,5 +141,5 @@ plt.subplots_adjust(hspace=0.5)
 plt.show()
 
 # Close the serial connection when done
-ser.close()
-print("Serial connection closed.")
+socket.close()
+print("Closing connection...")
