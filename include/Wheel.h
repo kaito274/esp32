@@ -26,6 +26,7 @@ private:
 
     double pwm = 0;
     int direction = 1;
+    int cur_direction = 1;
 public:
     Wheel();
     Wheel(int id, int pinA, int pinB, int L_PWM, int R_PWM);
@@ -60,6 +61,7 @@ public:
 
     int getPWM();
     int getDirection();
+    int getCurDirection();
     void setDirection(int direction);
     void setPWM(double pwm);
     void tuningRPM();

@@ -15,16 +15,23 @@ private:
     double ly; // Distance from center to wheels along y-axis (in meters)
     double r; // Radius of the wheel (in meters)
 
-    double point_x; // x-coordinate of the car
-    double point_y; // y-coordinate of the car
-    double direction; // Direction of the car (360 degrees)
+    double vxCar = 0;
+    double vyCar = 0;
+    double wzCar = 0;
+
+    double point_x;
+    double point_y;
+    double dir_angle;
+
     long time = 0;
     Wheel** wheels;  
 
 public:
     Car(double lx, double ly, double r, Wheel* wheels);
     void move(double vx, double vy, double wz);
-    void updatePosition(double vx, double vy, double wz);
+    void updatePosition();
+    void updateVelocity();   
+    void carInfo();
     ~Car(); 
 };
 

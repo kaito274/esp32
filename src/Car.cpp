@@ -1,6 +1,6 @@
 #include "Car.h"
 
-Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), point_x(0), point_y(0), direction(0)
+Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), point_x(0), point_y(0), dir_angle(0)
 {   
   this->wheels = new Wheel*[WHEEL_COUNT];
   for (int i = 0; i < WHEEL_COUNT; i++) {
@@ -10,7 +10,7 @@ Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), p
 
 void Car::move(double vx, double vy, double wz)
 {
-  vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
+  // vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
   double pwmFL, pwmFR, pwmRL, pwmRR;
 
   // Calculate wheel angular velocities in rad/s
@@ -62,13 +62,50 @@ void Car::move(double vx, double vy, double wz)
   wheels[3]->setDirection(dirRR);
 }
 
-void Car::updatePosition(double vx, double vy, double wz) {
+void Car::updatePosition() {
   long currentTime =  millis();
   double dt = (currentTime - time) / 1000.0; // Convert to seconds
-  point_x += vx * dt;
-  point_y += vy * dt;
-  direction += wz * dt;
-  direction = fmod(direction, 360); // Ensure the direction is within [0, 360] degrees
+
+  point_x = point_x + vxCar * dt;
+  point_y = point_y + vyCar * dt;
+  dir_angle = dir_angle + wzCar * dt * 180 / M_PI; // Convert to degrees
+  dir_angle = fmod(dir_angle, 360);
+  time = currentTime;
+}
+
+void Car::updateVelocity() {
+  Wheel *w0 = wheels[0];
+  Wheel *w1 = wheels[1];
+  Wheel *w2 = wheels[2];
+  Wheel *w3 = wheels[3];
+
+  // Convert RPM to angular velocity (rad/s)
+  double w_fl = w0->getCurrentRPM() * w0->getCurDirection() * 2 * M_PI / 60;
+  double w_fr = -1 * w1->getCurrentRPM() * w1->getCurDirection() * 2 * M_PI / 60;
+  double w_rl = w2->getCurrentRPM() * w2->getCurDirection() * 2 * M_PI / 60;
+  double w_rr = -1 * w3->getCurrentRPM() * w3->getCurDirection() * 2 * M_PI / 60;
+
+  // Calculate the linear and angular velocities of the car
+  vxCar = r / 4 * (w_fl + w_fr + w_rl + w_rr);
+  vyCar = r / 4 * (-w_fl + w_fr + w_rl - w_rr);
+  wzCar = r / (4 * (lx + ly)) * (-w_fl + w_fr - w_rl + w_rr);
+
+  Serial.print("w_fl: " + String(w_fl));
+  Serial.print("\tw_fr: " + String(w_fr));
+  Serial.print("\tw_rl: " + String(w_rl));
+  Serial.print("\tw_rr: " + String(w_rr));
+  Serial.print("\tvxCar: " + String(vxCar));
+  Serial.print("\tvyCar: " + String(vyCar));
+  Serial.print("\twzCar: " + String(wzCar));
+  Serial.println("");
+
+}
+
+void Car::carInfo() {
+  Serial.print("Point_x:" + String(point_x));
+  Serial.print("\tPoint_y:" + String(point_y));
+  Serial.print("\tDirection_Angle:" + String(dir_angle));
+  Serial.println("");
 }
 
 Car::~Car()

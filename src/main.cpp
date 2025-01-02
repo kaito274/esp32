@@ -112,7 +112,7 @@ void setup()
   //   "SendDataTask",  // Name of the task
   //   10000,           // Stack size (in words)
   //   NULL,            // Task parameter
-  //   5,               // Priority (higher value = higher priority)
+  //   5,               // Priority (higher value = higher priority)5
   //   &sendDataTaskHandle, // Task handle
   //   1                // Core to run the task (0 = Core 0, 1 = Core 1)
   // );
@@ -160,6 +160,9 @@ void loop()
       wheels[i].infoVelocity();
       wheels[i].resetEncValue(); // Reset encoder value
     }
+    mecanumCar.updateVelocity();
+    mecanumCar.updatePosition();
+    mecanumCar.carInfo();
     previousMillis = currentMillis;
   }
   

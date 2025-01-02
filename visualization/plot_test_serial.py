@@ -7,7 +7,7 @@ import threading
 import re
 
 # Open the serial port (make sure the port is correct)
-ser = serial.Serial('COM5', 115200)  # Replace 'COM4' with your port
+ser = serial.Serial('COM3', 115200)  # Replace 'COM4' with your port
 time.sleep(2)  # Wait for ESP32 to reset
 
 NUM_WHEELS = 4  # Number of wheels to plot
