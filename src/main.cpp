@@ -67,10 +67,11 @@ void sendDataTask(void *parameter)
     {
       while (client.connected())
       {
-        Serial.println(message);
-        client.print(message);
-        delay(50);
+        // Serial.println(message);
+        client.println(message_car);
+        delay(250);
       }
+      // delay(150);
     }
   }
 }
@@ -107,33 +108,33 @@ void setup()
 
   // TODO: Testing PID plot
     // Create the task for sending data, pinned to Core 1
-  // xTaskCreatePinnedToCore(
-  //   sendDataTask,    // Task function
-  //   "SendDataTask",  // Name of the task
-  //   10000,           // Stack size (in words)
-  //   NULL,            // Task parameter
-  //   5,               // Priority (higher value = higher priority)5
-  //   &sendDataTaskHandle, // Task handle
-  //   1                // Core to run the task (0 = Core 0, 1 = Core 1)
-  // );
+  xTaskCreatePinnedToCore(
+    sendDataTask,    // Task function
+    "SendDataTask",  // Name of the task
+    10000,           // Stack size (in words)
+    NULL,            // Task parameter
+    10,               // Priority (higher value = higher priority)5
+    &sendDataTaskHandle, // Task handle
+    1                // Core to run the task (0 = Core 0, 1 = Core 1)
+  );
 
   // TODO: ???
-  // Serial.begin(115200);
-  // WiFi.begin(ssid_, password_);
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
 
-  // // Wait for connection
-  // while (WiFi.status() != WL_CONNECTED)
-  // {
-  //   delay(1000);
-  //   Serial.println("Connecting to WiFi...");
-  // }
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
 
-  // Serial.println("Connected to WiFi!");
-  // Serial.print("ESP32 IP Address: ");
-  // Serial.println(WiFi.localIP());
+  Serial.println("Connected to WiFi!");
+  Serial.print("ESP32 IP Address: ");
+  Serial.println(WiFi.localIP());
 
-  // // Start the serverd
-  // server.begin();
+  // Start the serverd
+  server.begin();
 
 }
 

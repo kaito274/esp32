@@ -26,6 +26,8 @@ extern double kdPos;
 
 extern int dir;
 extern String message;
+extern String message_car;
+
 // Pin configurations for motors
 extern motorPin motorPin0; // pinA, pinB, L_PWM, R_PWM
 extern motorPin motorPin1; // pinA, pinB, L_PWM, R_PWM

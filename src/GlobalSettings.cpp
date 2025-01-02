@@ -15,6 +15,8 @@ double kdPos = 0;
 int dir = 1;
 
 String message = "";
+String message_car = "";
+
 // Pin configurations for motors
 // motorPin motorPin0 = motorPin(4, 5, 15, 2);    // C2, C1, L_PWM, R_PWM
 // motorPin motorPin1 = motorPin(25, 33, 27, 26); // C2, C1, L_PWM, R_PWM

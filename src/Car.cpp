@@ -1,4 +1,5 @@
 #include "Car.h"
+#include "GlobalSettings.h"
 
 Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), point_x(0), point_y(0), dir_angle(0)
 {   
@@ -106,6 +107,9 @@ void Car::carInfo() {
   Serial.print("\tPoint_y:" + String(point_y));
   Serial.print("\tDirection_Angle:" + String(dir_angle));
   Serial.println("");
+  message_car = "Point_x:" + String(point_x) 
+              + "\tPoint_y:" + String(point_y) 
+              + "\tDirection_Angle:" + String(dir_angle);
 }
 
 Car::~Car()

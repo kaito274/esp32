@@ -2,6 +2,7 @@
 #define __CAR_H__
 
 #include "Wheel.h"
+// #include "GlobalSettings.h"
 
 #define MAX_PWM 255 
 #define MAX_RPM 333  
