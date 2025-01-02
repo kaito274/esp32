@@ -38,6 +38,8 @@ extern Wheel wheels[];
 // Mecanum car object
 extern Car mecanumCar;
 
+// extern long time;
+
 // Declare the trigger interrupt function
 extern void triggerW0();
 extern void triggerW1();

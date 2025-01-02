@@ -1,6 +1,6 @@
 #include "Car.h"
 
-Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r)
+Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), point_x(0), point_y(0), direction(0)
 {   
   this->wheels = new Wheel*[WHEEL_COUNT];
   for (int i = 0; i < WHEEL_COUNT; i++) {
@@ -60,6 +60,15 @@ void Car::move(double vx, double vy, double wz)
   wheels[1]->setDirection(dirFR);
   wheels[2]->setDirection(dirRL);
   wheels[3]->setDirection(dirRR);
+}
+
+void Car::updatePosition(double vx, double vy, double wz) {
+  long currentTime =  millis();
+  double dt = (currentTime - time) / 1000.0; // Convert to seconds
+  point_x += vx * dt;
+  point_y += vy * dt;
+  direction += wz * dt;
+  direction = fmod(direction, 360); // Ensure the direction is within [0, 360] degrees
 }
 
 Car::~Car()
