@@ -15,7 +15,9 @@ Wheel::Wheel(int id, int pinA, int pinB, int L_PWM, int R_PWM) {
     this->pidVelocity = new PID(&this->currentRPM, &this->computedPWMVelocity, &this->targetRPM, kpVelo, kiVelo, kdVelo, DIRECT); 
     this->pidVelocity->SetMode(AUTOMATIC);
     this->pidVelocity->SetOutputLimits(-255, 255);
-    this->pidVelocity->SetSampleTime(500); // Set the sample time to 500ms
+    this->pidVelocity->SetSampleTime(50); // Set the sample time to 500ms
+    // Set tunings 30 times per second
+    this->pidVelocity->SetTunings(kpVelo, kiVelo, kdVelo);
 
     // PID Position initialization
     this->currentPosition = 0;
@@ -147,7 +149,7 @@ void Wheel::setDirection(int direction) {
 }
 
 void Wheel::tuningRPM() {
-    double currentRPM = (float)this->getEncValue() * 60 / ENC_COUNT_REV;
+    double currentRPM = (float)this->getEncValue() * (MILLIS_PER_MINUTE / interval_pid_velocity) / ENC_COUNT_REV;
     this->currentRPM = currentRPM;
     this->pidVelocity->SetTunings(kpVelo, kiVelo, kdVelo);
     this->pidVelocity->Compute(); // Compute the PID output
@@ -173,7 +175,7 @@ void Wheel::tuningPosition() {
 }
 
 String Wheel::infoVelocity() {
-    double currentRPM = (float)this->getEncValue() * 60 / ENC_COUNT_REV;
+    double currentRPM = (float)this->getEncValue() * (MILLIS_PER_MINUTE / interval_pid_velocity) / ENC_COUNT_REV;
 
     // Serial.println("######### Wheel Velocity Info #########");
     Serial.print("Wheel_ID:" + String(this->id));
