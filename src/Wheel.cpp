@@ -114,7 +114,18 @@ int Wheel::getDirection() {
     return this->direction;
 }
 
+int Wheel::getCurDirection() {
+    return this->cur_direction;
+}
+
 void Wheel::triggerInterrupt() {
+    int pinB = this->encoder->getPinB();
+    int B = digitalRead(pinB);
+    if (B > 0) {
+        this->cur_direction = 1;
+    } else {
+        this->cur_direction = -1;
+    }
     encoder->triggerInterrupt();
 }
 
@@ -168,8 +179,8 @@ String Wheel::infoVelocity() {
     Serial.print("Wheel_ID:" + String(this->id));
     Serial.print("\tTarget_RPM:"); Serial.print(this->getTargetRPM());
     Serial.print("\tPulse:"); Serial.print(this->getEncValue());
-    Serial.print("\tCurrent_RPM:"); Serial.print(currentRPM);
-    Serial.print("\tDirection:"); Serial.print(this->direction == RIGHT_DIR ? "RIGHT" : "LEFT");
+    Serial.print("\tCurrent_RPM:"); Serial.print(currentRPM * this->cur_direction);
+    Serial.print("\tDirection:"); Serial.print(this->cur_direction == RIGHT_DIR ? "RIGHT" : "LEFT");
     Serial.print("\tPWM:"); Serial.println(this->pwm);
     // Serial.print("\tERROR:"); Serial.println(this->computedPWMVelocity);
     String test = "Target_RPM:" + String(this->getTargetRPM()) 

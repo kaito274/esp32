@@ -7,7 +7,7 @@ import re
 import socket
 
 # Replace with your ESP32's IP address
-ESP32_IP = "172.20.10.9"  # Example IP address (replace with actual)
+ESP32_IP = "192.168.215.63"  # Example IP address (replace with actual)
 PORT = 8080
 
 server_ip = ESP32_IP
@@ -116,8 +116,8 @@ def update_plot(frame):
             # Update RPM line
             lines[i][0].set_data(wheels_data[i]['x_data'], wheels_data[i]['rpm_data'])
             axs[i, 0].relim()  # Recompute limits
-            axs[i, 0].autoscale_view()  # Autoscale view
-            # axs[i, 0].set_ylim(-10, 400)  # Set a fixed y-axis range for RPM
+            # axs[i, 0].autoscale_view()  # Autoscale view
+            axs[i, 0].set_ylim(-10, 400)  # Set a fixed y-axis range for RPM
 
 
             # Update PWM line

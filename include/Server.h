@@ -5,6 +5,9 @@
 #include <WiFi.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include "Motor.h"
+#include "config.h"
+#include "GlobalSettings.h"
 
 void initWiFi();
 void moveForward();

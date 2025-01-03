@@ -7,7 +7,7 @@ import threading
 import re
 
 # Open the serial port (make sure the port is correct)
-ser = serial.Serial('COM5', 115200)  # Replace 'COM4' with your port
+ser = serial.Serial('COM3', 115200)  # Replace 'COM4' with your port
 time.sleep(2)  # Wait for ESP32 to reset
 
 NUM_WHEELS = 4  # Number of wheels to plot
@@ -38,7 +38,6 @@ def read_serial_data():
     global x, rpms, pwms, target_rpms
     while True:
         line = ser.readline().decode('utf-8', errors='ignore').strip()
-        print(line)
         if line.startswith("Wheel_ID:"):
             # Extract data for each wheel
             parts = line.split()
@@ -64,13 +63,11 @@ def read_serial_data():
                         match = re.search(numerical, part)
                         if match:
                             pwm_value = float(match.group(0))
-                print(wheel_id, current_rpm, target_rpm, pwm_value)
                 if wheel_id >= 0 and wheel_id < NUM_WHEELS:
                     x[wheel_id] += 1  # Increment the x (time) value
                     rpms[wheel_id] = current_rpm
                     target_rpms[wheel_id] = target_rpm
                     pwms[wheel_id] = pwm_value
-
 
 # Initialize data structures for each wheel
 lines = [[None, None] for _ in range(NUM_WHEELS)]  # To store line objects for RPM and PWM

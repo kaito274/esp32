@@ -5,7 +5,8 @@
 #include "Wheel.h"
 #include "GlobalSettings.h"
 // #include "JSON_UARTReader.h"
-// #include "config.h"
+#include "Car.h"
+#include "config.h"
 #include <WiFi.h>
 #include <PID_v1.h>
 #include <ArduinoJson.h>
@@ -13,16 +14,13 @@
 #define LED 2
 
 // Server settings
-// #ifndef CONFIG_H
-// #define CONFIG_H
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
+inline const char *ssid = "YOUR_SSID"; // Replace with your network credentials
+inline const char *password = "YOUR_PASSWORD"; // Replace with your network credentials
 
-const char *ssid_ = "@@@@";
-const char *password_ = "khongcopass";
+#endif// Replace with your network credentials
 
-// #endif// Replace with your network credentials
-
-
-#define UART_BUFFER_SIZE 256
 #define VELOCITY 0
 // #define POSITION 1
 
@@ -52,7 +50,7 @@ TaskHandle_t sendDataTaskHandle;
 void sendDataTask(void *parameter)
 {
   Serial.println("Core 1");
-  WiFi.begin(ssid_, password_);
+  WiFi.begin(ssid, password);
 
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED)
@@ -76,37 +74,13 @@ void sendDataTask(void *parameter)
       while (client.connected())
       {
         // Serial.println(message);
-        for(int i = 0; i < 4; i++){
-          client.println(test_messages[i]);
-          delay(150);
-        }
-        // client.print(message);
-        delay(150);
+        client.println(message_car);
+        delay(250);
       }
+      // delay(150);
     }
   }
 }
-
-void sendDataToClient(void *parameter);
-
-// // PID variables
-// double setpoint;    // Desired motor velocity (RPM)
-// double input;       // Current motor velocity (RPM)
-// double output;      // PID output (PWM value)
-
-// // PID tuning parameters
-// double Kp = 2.0, Ki = 5.0, Kd = 1.0;
-
-// // Create PID instance
-// PID myPID(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
-
-// // Variables for encoder
-// volatile long encoderCount = 0;  // Encoder pulse count
-// unsigned long prevTime = 0;      // Previous time for velocity calculation
-// double rpm = 0;                  // Motor velocity in RPM
-
-void move(double vx, double vy, double wz);
-
 
 void setup()
 {
@@ -144,20 +118,20 @@ void setup()
 
 
   // TODO: Testing PID plot
-  // Create the task for sending data, pinned to Core 1
+    // Create the task for sending data, pinned to Core 1
   xTaskCreatePinnedToCore(
     sendDataTask,    // Task function
     "SendDataTask",  // Name of the task
     10000,           // Stack size (in words)
     NULL,            // Task parameter
-    10,               // Priority (higher value = higher priority)
+    10,               // Priority (higher value = higher priority)5
     &sendDataTaskHandle, // Task handle
     1                // Core to run the task (0 = Core 0, 1 = Core 1)
   );
 
   // TODO: ???
-  // Serial.begin(115200);
-  WiFi.begin(ssid_, password_);
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
 
   // Wait for connection
   while (WiFi.status() != WL_CONNECTED)
@@ -189,59 +163,22 @@ void loop()
   // Velocity
   currentMillis = millis();
 
-  if (currentMillis - previousMillis > interval_velocity)
-  {
-  
-    wheels[0].tuningRPM();
-    wheels[1].tuningRPM();
-    wheels[2].tuningRPM();
-    wheels[3].tuningRPM();
-      // analogWrite(26, 100);
-      // analogWrite(27, 100);
-    if (wheels[0].getDirection() == RIGHT_DIR) {
-      wheels[0].getMotor().TurnRight(wheels[0].getPWM());
-    } else {
-      wheels[0].getMotor().TurnLeft(wheels[0].getPWM());
+  if (currentMillis - previousMillis > interval_velocity) {
+    for(int i = 0; i < WHEEL_COUNT; i++){
+      wheels[i].tuningRPM();
+      
+      if (wheels[i].getDirection() == RIGHT_DIR) {
+        wheels[i].getMotor().TurnRight(wheels[i].getPWM());
+      } else {
+        wheels[i].getMotor().TurnLeft(wheels[i].getPWM());
+      }
+      wheels[i].infoVelocity();
+      wheels[i].resetEncValue(); // Reset encoder value
     }
- 
-    if (wheels[1].getDirection() == RIGHT_DIR) {
-      wheels[1].getMotor().TurnRight(wheels[1].getPWM());
-    } else {
-      wheels[1].getMotor().TurnLeft(wheels[1].getPWM());
-    }
-    
-    if (wheels[2].getDirection() == RIGHT_DIR) {
-      wheels[2].getMotor().TurnRight(wheels[2].getPWM());
-    } else {
-      wheels[2].getMotor().TurnLeft(wheels[2].getPWM());
-    }
-
-    if (wheels[3].getDirection() == RIGHT_DIR) {
-      wheels[3].getMotor().TurnRight(wheels[3].getPWM());
-    } else {
-      wheels[3].getMotor().TurnLeft(wheels[3].getPWM());
-    }
+    mecanumCar.updateVelocity();
+    mecanumCar.updatePosition();
+    mecanumCar.carInfo();
     previousMillis = currentMillis;
-
-    // TODO: test Phuc
-    // Serial.print(wheels[3].getTargetRPM());
-    // Serial.print(" ");
-    // Serial.println(wheels[3].getComputedPWMVelocity());
-    // Serial.print(wheels[3].getPIDVelocity().GetKp());
-    // Serial.print(" ");
-    // Serial.print(wheels[3].getPIDVelocity().GetKi());
-    // Serial.print(" ");
-    // Serial.println(wheels[3].getPIDVelocity().GetKd());
-    wheels[0].infoVelocity();
-    wheels[1].infoVelocity();
-    wheels[2].infoVelocity();
-    wheels[3].infoVelocity();
-
-    // Reset encoder value
-    wheels[0].resetEncValue();
-    wheels[1].resetEncValue();
-    wheels[2].resetEncValue();
-    wheels[3].resetEncValue();
   }
   
   SerialDataWrite();
@@ -252,37 +189,15 @@ void loop()
   currentMillis = millis();
   if (currentMillis - previousMillis > interval_position)
   {
-    wheels[0].infoPosition();
-    wheels[0].tuningPosition();
-    if (wheels[0].getDirection() == LEFT_DIR) {
-      wheels[0].getMotor().TurnLeft(wheels[0].getPWM());
-    } else {
-      wheels[0].getMotor().TurnRight(wheels[0].getPWM());
+    for (int i = 0; i < WHEEL_COUNT; i++) {
+      wheels[i].infoPosition();
+      wheels[i].tuningPosition();
+      if (wheels[i].getDirection() == LEFT_DIR) {
+        wheels[i].getMotor().TurnLeft(wheels[i].getPWM());
+      } else {
+        wheels[i].getMotor().TurnRight(wheels[i].getPWM());
+      }
     }
-
-    // wheels[1].infoPosition();
-    // wheels[1].tuningPosition();
-    // if (wheels[1].getDirection() == LEFT_DIR) {
-    //   wheels[1].getMotor().TurnLeft(wheels[1].getPWM());
-    // } else {
-    //   wheels[1].getMotor().TurnRight(wheels[1].getPWM());
-    // }
-
-    // wheels[2].infoPosition();
-    // wheels[2].tuningPosition();
-    // if (wheels[2].getDirection() == LEFT_DIR) {
-    //   wheels[2].getMotor().TurnLeft(wheels[2].getPWM());
-    // } else {
-    //   wheels[2].getMotor().TurnRight(wheels[2].getPWM());
-    // }
-
-    // wheels[3].infoPosition();
-    // wheels[3].tuningPosition();
-    // if (wheels[3].getDirection() == LEFT_DIR) {
-    //   wheels[3].getMotor().TurnLeft(wheels[3].getPWM());
-    // } else {
-    //   wheels[3].getMotor().TurnRight(wheels[3].getPWM());
-    // }
     previousMillis = currentMillis;
   }
 
@@ -343,36 +258,60 @@ void loop()
     }
   }
 
+  // DeserializationError error = uart_reader.read(doc);
+  size_t bytes_read = 0;
+  while (camSerial.available() > 0 && bytes_read < UART_BUFFER_SIZE - 1) {
+    buffer[bytes_read] = camSerial.read();
+    ++bytes_read;
+  }
 
-  //  // Calculate RPM every 100 ms
-  // unsigned long currentTime = millis();
-  // if (currentTime - prevTime >= 100) {
-  //   // noInterrupts();
-  //   // long count = encoderCount;  // Copy encoder count
-  //   // encoderCount = 0;           // Reset encoder count
-  //   // interrupts();
+  buffer[bytes_read] = '\0';
+  DeserializationError error = deserializeJson(doc, buffer);
+  // if (error) {
+  //   Serial.print(F("deserializeJson() failed: "));
+  //   Serial.println(error.c_str());
+  // } else {
+  if (!error) {
+    const movement_t mv_type = doc["t"];
 
-  //   // // Calculate RPM
-  //   // rpm = (count / 20.0) * (600.0 / 0.1);  // Assuming 20 pulses per revolution
-  //   // input = rpm;
+    switch (mv_type) {
+      case (OMNIDIRECTIONAL): {
+        const operation_mode_t op_type = doc["m"];
 
-  //   // Compute PID output
-  //   myPID.Compute();
+        switch (op_type) {
+          case (BUTTONS_MANUAL): {
+            const double vx = doc["x"], vy = doc["y"];
+            const uint8_t throttle = doc["th"];
 
-  //   // // Apply motor control
-  //   // motorControl(output);
+            Serial.print(vx);
+            Serial.print(" ");
+            Serial.print(vy);
+            Serial.print(" ");
+            Serial.print(throttle);
+            Serial.println();
 
-  //   // Debugging
-  //   Serial.print("Setpoint: ");
-  //   Serial.print(setpoint);
-  //   Serial.print(" RPM, Input: ");
-  //   Serial.print(input);
-  //   Serial.print(" RPM, Output: ");
-  //   Serial.println(output);
+            // move(vx*0.2 , vy*0.2, 0);
+            move(vy*0.2, -vx*0.2, 0);
 
-  //   prevTime = currentTime;
-  // }
-  // SerialDataWrite();
+            break;
+          }
+
+          default: {
+            Serial.println("unknown operaiton mode");
+          }
+        }
+
+        break;
+      }
+      case (ROTATIONAL): {
+        
+        break;
+      }
+      default: {
+        Serial.println("unknown movement type");
+      }
+    }
+  }
 
 }
 
@@ -408,48 +347,47 @@ void command_test(char option){
   switch (option)
   {
   case '1':
-    move(-velo_test, velo_test, 0.0);
+    mecanumCar.move(-velo_test, velo_test, 0.0);
     break;
   case '2':
-    move(-velo_test, 0, 0.0);
+    mecanumCar.move(-velo_test, 0, 0.0);
     break;
   case '3':
-    move(-velo_test, -velo_test, 0.0);
+    mecanumCar.move(-velo_test, -velo_test, 0.0);
     break;
   case '4':
-    move(0, velo_test, 0.0);
+    mecanumCar.move(0, velo_test, 0.0);
     break;
   case '5':
-    move(0.0, 0.0, 0.0);
+    mecanumCar.move(0.0, 0.0, 0.0);
     Serial.println("Stopped");
     break;
   case '6':
-    move(0, -velo_test, 0.0);
+    mecanumCar.move(0, -velo_test, 0.0);
     break;
   case '7':
-    move(velo_test, velo_test, 0.0);
+    mecanumCar.move(velo_test, velo_test, 0.0);
     break;
   case '8':
-    move(velo_test, 0, 0.0);
+    mecanumCar.move(velo_test, 0, 0.0);
     break;
   case '9':
-    move(velo_test, -velo_test, 0.0);
+    mecanumCar.move(velo_test, -velo_test, 0.0);
     break;
   case 'p': //rotate right
-    move(0, 0, -velo_rotate);
+    mecanumCar.move(0, 0, -velo_rotate);
     break;
   case 'o': //rotate left
-    move(0, 0, velo_rotate);
+    mecanumCar.move(0, 0, velo_rotate);
     break;
   case 'k': //drift left
-    move(0.0, velo_test, velo_rotate);
+    mecanumCar.move(0.0, velo_test, velo_rotate);
     break;
   case 'l': //drift rightp
-  
-    move(0.0, -velo_test, -velo_rotate);
+    mecanumCar.move(0.0, -velo_test, -velo_rotate);
     break;
   default:
-    move(0, 0, 0);
+    mecanumCar.move(0, 0, 0);
     Serial.println("Error");
     break;
   }
@@ -462,7 +400,7 @@ void command_test(char option){
 
 void move(double vx, double vy, double wz)
 {
-  // vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
+  vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
   double pwmFL, pwmFR, pwmRL, pwmRR;
 
   // Mecanum car dimensions (example values, adjust as needed)

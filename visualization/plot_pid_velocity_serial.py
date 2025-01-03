@@ -7,7 +7,7 @@ import threading
 import re
 
 # Open the serial port (make sure the port is correct)
-ser = serial.Serial('COM5', 115200)  # Replace 'COM5' with your port
+ser = serial.Serial('COM4', 115200)  # Replace 'COM5' with your port
 time.sleep(2)  # Wait for ESP32 to reset
 
 # Set up the plot
@@ -33,7 +33,7 @@ def read_serial_data():
         if line.startswith("Wheel_ID:0"):
             # Extract x and y values
             parts = line.split()
-            print(parts)
+            # print(parts)
             with data_lock:  # Acquire lock to safely update shared data
                 for part in parts:
                     if "Current_RPM" in part:
