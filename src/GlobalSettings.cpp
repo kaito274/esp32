@@ -3,12 +3,12 @@
 const int NUM_MOTORS = 1;
 
 // PID  Velocity constants
-double kpVelo = 0.75;
+double kpVelo = 0.5;
 double kiVelo = 0.0;
 double kdVelo = 0.0;
 
 // PID Position constants
-double kpPos = 0.5;
+double kpPos = 0.0;
 double kiPos = 0.0;
 double kdPos = 0;
 
@@ -16,6 +16,13 @@ int dir = 1;
 
 String message = "";
 String message_car = "";
+std::vector<String> test_messages = {"", "", "", ""};
+
+// interval for measurements
+int interval_velocity = 50;
+int interval_position = 1;
+int interval_pid_velocity = 100;
+int interval_velocity_info = 1000;
 
 // Pin configurations for motors
 // motorPin motorPin0 = motorPin(4, 5, 15, 2);    // C2, C1, L_PWM, R_PWM
@@ -44,8 +51,7 @@ Wheel wheels[] = {
     Wheel(0, motorPin0.pinA, motorPin0.pinB, motorPin0.L_PWM, motorPin0.R_PWM),
     Wheel(1, motorPin1.pinA, motorPin1.pinB, motorPin1.L_PWM, motorPin1.R_PWM),
     Wheel(2, motorPin2.pinA, motorPin2.pinB, motorPin2.L_PWM, motorPin2.R_PWM),
-    Wheel(3, motorPin3.pinA, motorPin3.pinB, motorPin3.L_PWM, motorPin3.R_PWM)
-};
+    Wheel(3, motorPin3.pinA, motorPin3.pinB, motorPin3.L_PWM, motorPin3.R_PWM)};
 
 Car mecanumCar(LX, LY, WHEEL_RADIUS, wheels);
 // long time = 0;

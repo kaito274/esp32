@@ -70,7 +70,7 @@ def update_position(frame):
     # Add a new random data point to simulate car position
     new_x = x 
     new_y = y 
-    new_direction = direction
+    new_direction = direction * 180 / math.pi
     # new_direction = 180
 
     x_positions.append(new_x)

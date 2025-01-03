@@ -22,7 +22,7 @@ private:
 
     double point_x;
     double point_y;
-    double dir_angle;
+    double angle;
 
     long time = 0;
     Wheel** wheels;  

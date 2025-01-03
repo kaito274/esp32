@@ -38,7 +38,6 @@ def read_serial_data():
     global x, rpms, pwms, target_rpms
     while True:
         line = ser.readline().decode('utf-8', errors='ignore').strip()
-
         if line.startswith("Wheel_ID:"):
             # Extract data for each wheel
             parts = line.split()
@@ -64,7 +63,6 @@ def read_serial_data():
                         match = re.search(numerical, part)
                         if match:
                             pwm_value = float(match.group(0))
-
                 if wheel_id >= 0 and wheel_id < NUM_WHEELS:
                     x[wheel_id] += 1  # Increment the x (time) value
                     rpms[wheel_id] = current_rpm

@@ -1,7 +1,7 @@
 #include "Car.h"
 #include "GlobalSettings.h"
 
-Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), point_x(0), point_y(0), dir_angle(0)
+Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), point_x(0), point_y(0), angle(0)
 {   
   this->wheels = new Wheel*[WHEEL_COUNT];
   for (int i = 0; i < WHEEL_COUNT; i++) {
@@ -67,10 +67,11 @@ void Car::updatePosition() {
   long currentTime =  millis();
   double dt = (currentTime - time) / 1000.0; // Convert to seconds
 
-  point_x = point_x + vxCar * dt;
-  point_y = point_y + vyCar * dt;
-  dir_angle = dir_angle + wzCar * dt * 180 / M_PI; // Convert to degrees
-  dir_angle = fmod(dir_angle, 360);
+  angle = angle + wzCar * dt; // Convert to degrees
+  point_x = point_x + (vxCar * cos(angle) - vyCar * sin(angle)) * dt;
+  point_y = point_y + (vxCar * sin(angle) + vyCar * cos(angle)) * dt;
+  
+  // angle = fmod(angle, M_PI * 2); // Normalize the angle to [0, 2*PI]
   time = currentTime;
 }
 
@@ -91,25 +92,25 @@ void Car::updateVelocity() {
   vyCar = r / 4 * (-w_fl + w_fr + w_rl - w_rr);
   wzCar = r / (4 * (lx + ly)) * (-w_fl + w_fr - w_rl + w_rr);
 
-  Serial.print("w_fl: " + String(w_fl));
-  Serial.print("\tw_fr: " + String(w_fr));
-  Serial.print("\tw_rl: " + String(w_rl));
-  Serial.print("\tw_rr: " + String(w_rr));
-  Serial.print("\tvxCar: " + String(vxCar));
-  Serial.print("\tvyCar: " + String(vyCar));
-  Serial.print("\twzCar: " + String(wzCar));
-  Serial.println("");
+  // Serial.print("w_fl: " + String(w_fl));
+  // Serial.print("\tw_fr: " + String(w_fr));
+  // Serial.print("\tw_rl: " + String(w_rl));
+  // Serial.print("\tw_rr: " + String(w_rr));
+  // Serial.print("\tvxCar: " + String(vxCar));
+  // Serial.print("\tvyCar: " + String(vyCar));
+  // Serial.print("\twzCar: " + String(wzCar));
+  // Serial.println("");
 
 }
 
 void Car::carInfo() {
   Serial.print("Point_x:" + String(point_x));
   Serial.print("\tPoint_y:" + String(point_y));
-  Serial.print("\tDirection_Angle:" + String(dir_angle));
+  Serial.print("\tDirection_Angle:" + String(angle));
   Serial.println("");
   message_car = "Point_x:" + String(point_x) 
               + "\tPoint_y:" + String(point_y) 
-              + "\tDirection_Angle:" + String(dir_angle);
+              + "\tDirection_Angle:" + String(angle);
 }
 
 Car::~Car()

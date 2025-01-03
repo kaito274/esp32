@@ -4,10 +4,12 @@
 #include "Encoder.h"
 #include "Wheel.h"
 #include "GlobalSettings.h"
+// #include "JSON_UARTReader.h"
 #include "Car.h"
 #include "config.h"
 #include <WiFi.h>
 #include <PID_v1.h>
+#include <ArduinoJson.h>
 
 #define LED 2
 
@@ -19,17 +21,20 @@ inline const char *password = "YOUR_PASSWORD"; // Replace with your network cred
 
 #endif// Replace with your network credentials
 
+#define UART_BUFFER_SIZE 256
 #define VELOCITY 0
 // #define POSITION 1
 
-
-// interval for measurements
-int interval_velocity = 1000;
-int interval_position = 1;
+HardwareSerial camSerial(2);
+uint8_t buffer[UART_BUFFER_SIZE];
+// JSON_UARTReader uart_reader(camSerial, 115200, 16, 17);
+JsonDocument doc;
 
 // Counters for milliseconds during interval
 long previousMillis = 0;
 long currentMillis = 0;
+
+long previousMillisInfoVelocity = 0;
 
 const int port = 8080;
 const int stopSignal = 20;
@@ -79,8 +84,13 @@ void sendDataTask(void *parameter)
 void setup()
 {
   Serial.begin(115200);
-
+  camSerial.begin(115200, SERIAL_8N1, 16, 17);
   pinMode(LED, OUTPUT);
+  pinMode(26, OUTPUT);
+  pinMode(27, OUTPUT);
+
+
+  // move(0.0, 0.0, 1.0);
 
   // Attach the interrupt functions to the encoder pins
   attachInterrupt(digitalPinToInterrupt(wheels[0].getEncPinA()), triggerW0, RISING);
@@ -119,7 +129,6 @@ void setup()
   );
 
   // TODO: ???
-  Serial.begin(115200);
   WiFi.begin(ssid, password);
 
   // Wait for connection
@@ -143,13 +152,33 @@ void command_test(char option);
 
 void loop()
 {
-  // WiFiClient client = server.available();
 
 #ifdef VELOCITY
-  // Velocity
+
   currentMillis = millis();
 
-  if (currentMillis - previousMillis > interval_velocity) {
+  // PID Velocity
+  // if (currentMillis - previousMillisPIDVelocity > interval_pid_velocity) {
+  //   for (int i = 0; i < WHEEL_COUNT; i++) {
+  //     wheels[i].tuningRPM();
+  //   }
+  //   previousMillisPIDVelocity = currentMillis;
+  // }
+
+  
+
+  // Velocity
+  if (currentMillis - previousMillis > interval_pid_velocity) {
+
+    //   // Info velocity
+    // if (currentMillis - previousMillisInfoVelocity > interval_velocity_info) {
+    //   for (int i = 0; i < WHEEL_COUNT; i++) {
+    //     wheels[i].infoVelocity();
+    //   }
+    //   mecanumCar.carInfo();
+    //   previousMillisInfoVelocity = currentMillis;
+    // }
+
     for(int i = 0; i < WHEEL_COUNT; i++){
       wheels[i].tuningRPM();
       
@@ -158,7 +187,6 @@ void loop()
       } else {
         wheels[i].getMotor().TurnLeft(wheels[i].getPWM());
       }
-      wheels[i].infoVelocity();
       wheels[i].resetEncValue(); // Reset encoder value
     }
     mecanumCar.updateVelocity();
@@ -189,6 +217,61 @@ void loop()
 
 #endif // POSITION
 
+  // DeserializationError error = uart_reader.read(doc);
+  size_t bytes_read = 0;
+  while (camSerial.available() > 0 && bytes_read < UART_BUFFER_SIZE - 1) {
+    buffer[bytes_read] = camSerial.read();
+    ++bytes_read;
+  }
+
+  buffer[bytes_read] = '\0';
+  DeserializationError error = deserializeJson(doc, buffer);
+  // if (error) {
+  //   Serial.print(F("deserializeJson() failed: "));
+  //   Serial.println(error.c_str());
+  // } else {
+  if (!error) {
+    const movement_t mv_type = doc["t"];
+
+    switch (mv_type) {
+      case (OMNIDIRECTIONAL): {
+        const operation_mode_t op_type = doc["m"];
+
+        switch (op_type) {
+          case (BUTTONS_MANUAL): {
+            const double vx = doc["x"], vy = doc["y"];
+            const uint8_t throttle = doc["th"];
+
+            Serial.print(vx);
+            Serial.print(" ");
+            Serial.print(vy);
+            Serial.print(" ");
+            Serial.print(throttle);
+            Serial.println();
+
+            // move(vx*0.2 , vy*0.2, 0);
+            mecanumCar.move(vx*0.2, vy*0.2, 0);
+
+            break;
+          }
+
+          default: {
+            Serial.println("unknown operaiton mode");
+          }
+        }
+
+        break;
+      }
+      case (ROTATIONAL): {
+        
+        break;
+      }
+      default: {
+        Serial.println("unknown movement type");
+      }
+    }
+  }
+
 }
 
 void SerialDataWrite()
@@ -201,13 +284,7 @@ void SerialDataWrite()
     if (inChar == '\n')
     {
       // Serial.println(received_chars);
-      // // wheels[0].setCurrentRPM(received_chars.toInt());
-      // // input = received_chars.toInt();
-      //  wheels[0].setTargetPosition(received_chars.toInt());
-      // received_chars = "";
       int option = received_chars.toInt();
-      // Serial.println(option);
-      // Serial.println("2137123");
       char c = received_chars[0];
       command_test(c);
       received_chars = "";
@@ -268,3 +345,4 @@ void command_test(char option){
     break;
   }
 }
+
