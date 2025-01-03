@@ -16,6 +16,7 @@ int dir = 1;
 
 String message = "";
 String message_car = "";
+std::vector<String> test_messages = {"", "", "", ""};
 
 // Pin configurations for motors
 // motorPin motorPin0 = motorPin(4, 5, 15, 2);    // C2, C1, L_PWM, R_PWM

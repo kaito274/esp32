@@ -27,6 +27,7 @@ extern double kdPos;
 
 extern int dir;
 extern String message;
+extern std::vector<String> test_messages;
 extern String message_car;
 
 // Pin configurations for motors

@@ -21,6 +21,7 @@ inline const char *password = "YOUR_PASSWORD"; // Replace with your network cred
 
 #endif// Replace with your network credentials
 
+#define UART_BUFFER_SIZE 256
 #define VELOCITY 0
 // #define POSITION 1
 
@@ -236,7 +237,7 @@ void loop()
             Serial.println();
 
             // move(vx*0.2 , vy*0.2, 0);
-            move(vy*0.2, -vx*0.2, 0);
+            mecanumCar.move(vx*0.2, vy*0.2, 0);
 
             break;
           }
@@ -258,60 +259,60 @@ void loop()
     }
   }
 
-  // DeserializationError error = uart_reader.read(doc);
-  size_t bytes_read = 0;
-  while (camSerial.available() > 0 && bytes_read < UART_BUFFER_SIZE - 1) {
-    buffer[bytes_read] = camSerial.read();
-    ++bytes_read;
-  }
+  // // DeserializationError error = uart_reader.read(doc);
+  // size_t bytes_read = 0;
+  // while (camSerial.available() > 0 && bytes_read < UART_BUFFER_SIZE - 1) {
+  //   buffer[bytes_read] = camSerial.read();
+  //   ++bytes_read;
+  // }
 
-  buffer[bytes_read] = '\0';
-  DeserializationError error = deserializeJson(doc, buffer);
-  // if (error) {
-  //   Serial.print(F("deserializeJson() failed: "));
-  //   Serial.println(error.c_str());
-  // } else {
-  if (!error) {
-    const movement_t mv_type = doc["t"];
+  // buffer[bytes_read] = '\0';
+  // DeserializationError error = deserializeJson(doc, buffer);
+  // // if (error) {
+  // //   Serial.print(F("deserializeJson() failed: "));
+  // //   Serial.println(error.c_str());
+  // // } else {
+  // if (!error) {
+  //   const movement_t mv_type = doc["t"];
 
-    switch (mv_type) {
-      case (OMNIDIRECTIONAL): {
-        const operation_mode_t op_type = doc["m"];
+  //   switch (mv_type) {
+  //     case (OMNIDIRECTIONAL): {
+  //       const operation_mode_t op_type = doc["m"];
 
-        switch (op_type) {
-          case (BUTTONS_MANUAL): {
-            const double vx = doc["x"], vy = doc["y"];
-            const uint8_t throttle = doc["th"];
+  //       switch (op_type) {
+  //         case (BUTTONS_MANUAL): {
+  //           const double vx = doc["x"], vy = doc["y"];
+  //           const uint8_t throttle = doc["th"];
 
-            Serial.print(vx);
-            Serial.print(" ");
-            Serial.print(vy);
-            Serial.print(" ");
-            Serial.print(throttle);
-            Serial.println();
+  //           Serial.print(vx);
+  //           Serial.print(" ");
+  //           Serial.print(vy);
+  //           Serial.print(" ");
+  //           Serial.print(throttle);
+  //           Serial.println();
 
-            // move(vx*0.2 , vy*0.2, 0);
-            move(vy*0.2, -vx*0.2, 0);
+  //           // move(vx*0.2 , vy*0.2, 0);
+  //           mecanumCar.move(vx*0.2, vy*0.2, 0);
 
-            break;
-          }
+  //           break;
+  //         }
 
-          default: {
-            Serial.println("unknown operaiton mode");
-          }
-        }
+  //         default: {
+  //           Serial.println("unknown operaiton mode");
+  //         }
+  //       }
 
-        break;
-      }
-      case (ROTATIONAL): {
+  //       break;
+  //     }
+  //     case (ROTATIONAL): {
         
-        break;
-      }
-      default: {
-        Serial.println("unknown movement type");
-      }
-    }
-  }
+  //       break;
+  //     }
+  //     default: {
+  //       Serial.println("unknown movement type");
+  //     }
+  //   }
+  // }
 
 }
 
@@ -393,67 +394,3 @@ void command_test(char option){
   }
 }
 
-#define MAX_RPM 333  // Replace with your motor's max RPM
-#define MAX_PWM 255  // Replace with your motor's max PWM value
-
-
-
-void move(double vx, double vy, double wz)
-{
-  vy *= -1; // Flip the sign of vy (Mecanum drive has inverted y-axis)
-  double pwmFL, pwmFR, pwmRL, pwmRR;
-
-  // Mecanum car dimensions (example values, adjust as needed)
-  double lx = 0.3; // Distance from center to wheels along x-axis (in meters)
-  double ly = 0.2; // Distance from center to wheels along y-axis (in meters)
-  double r = 0.05; // Radius of the wheel (in meters)
-
-  // Calculate wheel angular velocities in rad/s
-  // Calculate wheel angular velocities in rad/s
-  double w_fl = (1 / r) * (vx - vy - (lx + ly) * wz);
-  double w_fr = -(1 / r) * (vx + vy + (lx + ly) * wz); // Flip direction
-  double w_rl = (1 / r) * (vx + vy - (lx + ly) * wz);
-  double w_rr = -(1 / r) * (vx - vy + (lx + ly) * wz); // Flip direction
-
-  // Convert angular velocities to RPM
-  double rpmFL = w_fl * 60 / (2 * M_PI);
-  double rpmFR = w_fr * 60 / (2 * M_PI);
-  double rpmRL = w_rl * 60 / (2 * M_PI);
-  double rpmRR = w_rr * 60 / (2 * M_PI);
-
-  // Cap RPM values to MAX_RPM
-  rpmFL = constrain(rpmFL, -MAX_RPM, MAX_RPM);
-  rpmFR = constrain(rpmFR, -MAX_RPM, MAX_RPM);
-  rpmRL = constrain(rpmRL, -MAX_RPM, MAX_RPM);
-  rpmRR = constrain(rpmRR, -MAX_RPM, MAX_RPM);
-
-  // Set direction of the wheels
-  int dirFL = (w_fl > 0) ? 1 : -1;
-  int dirFR = (w_fr > 0) ? 1 : -1;
-  int dirRL = (w_rl > 0) ? 1 : -1;
-  int dirRR = (w_rr > 0) ? 1 : -1;
-
-  // // Convert RPMs to PWM values (absolute values)
-  // pwmFL = map(abs(rpmFL), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmFR = map(abs(rpmFR), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmRL = map(abs(rpmRL), 0, MAX_RPM, 0, MAX_PWM);
-  // pwmRR = map(abs(rpmRR), 0, MAX_RPM, 0, MAX_PWM);
-
-  // // Apply the computed PWM values to the motors
-  // wheels[0].setPWM(pwmFL);
-  // wheels[1].setPWM(pwmFR);
-  // wheels[2].setPWM(pwmRL);
-  // wheels[3].setPWM(pwmRR);
-
-  // TODO: Using PIDvelo_rotate
-  wheels[0].setTargetRPM(abs(rpmFL));
-  wheels[1].setTargetRPM(abs(rpmFR));
-  wheels[2].setTargetRPM(abs(rpmRL));
-  wheels[3].setTargetRPM(abs(rpmRR));
-
-  // Set the direction of the wheels
-  wheels[0].setDirection(dirFL);
-  wheels[1].setDirection(dirFR);
-  wheels[2].setDirection(dirRL);
-  wheels[3].setDirection(dirRR);
-}
