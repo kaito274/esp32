@@ -8,8 +8,8 @@
 
 #define RIGHT_DIR 1
 #define LEFT_DIR -1
-#define LX 0.3 // Distance from center to wheels along x-axis (in meters)
-#define LY 0.2  // Distance from center to wheels along y-axis (in meters)
+#define LX 0.25 // Distance from center to wheels along x-axis (in meters)
+#define LY 0.25  // Distance from center to wheels along y-axis (in meters)
 #define WHEEL_RADIUS 0.05  // Radius of the wheel (in meters)
 
 #define MILLIS_PER_MINUTE 60000
