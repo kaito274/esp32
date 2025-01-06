@@ -1,6 +1,6 @@
 #include "GlobalSettings.h"
 
-const int NUM_MOTORS = 1;
+const int NUM_MOTORS = 4;
 
 // PID  Velocity constants
 double kpVelo = 0.5;
@@ -8,9 +8,9 @@ double kiVelo = 0.0;
 double kdVelo = 0.0;
 
 // PID Position constants
-double kpPos = 0.0;
+double kpPos = 0.5;
 double kiPos = 0.0;
-double kdPos = 0;
+double kdPos = 0.0;
 
 int dir = 1;
 

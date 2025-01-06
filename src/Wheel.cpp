@@ -148,9 +148,13 @@ void Wheel::setDirection(int direction) {
     this->direction = direction;
 }
 
+void Wheel::updateRealRPM() {
+    this->currentRPM = (float)this->getEncValue() * (MILLIS_PER_MINUTE / interval_pid_velocity) / ENC_COUNT_REV;
+}
+
 void Wheel::tuningRPM() {
-    double currentRPM = (float)this->getEncValue() * (MILLIS_PER_MINUTE / interval_pid_velocity) / ENC_COUNT_REV;
-    this->currentRPM = currentRPM;
+    // double currentRPM = (float)this->getEncValue() * (MILLIS_PER_MINUTE / interval_pid_velocity) / ENC_COUNT_REV;
+    // this->currentRPM = currentRPM;
     this->pidVelocity->SetTunings(kpVelo, kiVelo, kdVelo);
     this->pidVelocity->Compute(); // Compute the PID output
     this->pwm += this->computedPWMVelocity;
@@ -206,7 +210,8 @@ void Wheel::infoPosition() {
     Serial.print("Wheel_ID:" + String(this->id));
     Serial.print("\tTarget_position:"); Serial.print(this->getTargetPosition());
     Serial.print("\tCurrent_position:"); Serial.print(this->getEncPosition());
-    Serial.print("\tDirection:"); Serial.print(this->direction == RIGHT_DIR ? "RIGHT" : "LEFT");
+    Serial.print("\tTarget_Direction:"); Serial.print(this->direction == RIGHT_DIR ? "RIGHT" : "LEFT");
+    Serial.print("\tCurrent_Direction:"); Serial.print(this->cur_direction == RIGHT_DIR ? "RIGHT" : "LEFT");
     Serial.print("\tMotor_Power:"); Serial.print(this->pwm);
     Serial.print("\tError:"); Serial.println(targetPosition - currentPosition);
     // message = "Target_position:" + String(this->getTargetPosition()) 

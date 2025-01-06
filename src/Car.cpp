@@ -104,10 +104,10 @@ void Car::updateVelocity() {
 }
 
 void Car::carInfo() {
-  // Serial.print("Point_x:" + String(point_x));
-  // Serial.print("\tPoint_y:" + String(point_y));
-  // Serial.print("\tDirection_Angle:" + String(angle));
-  // Serial.println("");
+  Serial.print("Point_x:" + String(point_x));
+  Serial.print("\tPoint_y:" + String(point_y));
+  Serial.print("\tDirection_Angle:" + String(angle));
+  Serial.println("");
   message_car = "Point_x:" + String(point_x) 
               + "\tPoint_y:" + String(point_y) 
               + "\tDirection_Angle:" + String(angle);

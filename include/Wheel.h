@@ -64,6 +64,7 @@ public:
     int getCurDirection();
     void setDirection(int direction);
     void setPWM(double pwm);
+    void updateRealRPM();
     void tuningRPM();
     void tuningPosition();
     String infoVelocity();

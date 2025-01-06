@@ -31,6 +31,7 @@ JsonDocument doc;
 
 // Counters for milliseconds during interval
 long previousMillis = 0;
+long previousMillisUpdateRPM = 0;
 long currentMillis = 0;
 
 double velo_test = 0.375;
@@ -46,6 +47,7 @@ int positions[] = {0, 0, 0, 0};
 const int port = 8080;
 const int stopSignal = 20;
 WiFiServer server(port);
+WiFiClient client;
 
 // Flag to track client status
 bool isClientConnected = false;
@@ -81,16 +83,17 @@ void sendDataTask(void *parameter)
       {
         // Serial.println(message);
         client.println(message_car);
-        for(int i = 0; i < WHEEL_COUNT; i++){
-          client.println(test_messages[i]);
-          delay(250);
-        }
+        // for(int i = 0; i < WHEEL_COUNT; i++){
+        //   client.println(test_messages[i]);
+        //   delay(250);
+        // }
         delay(250);
       }
       // delay(150);
     }
   }
 }
+
 
 void setup()
 {
@@ -123,7 +126,11 @@ void setup()
 #endif // VELOCITY
 
 #ifdef POSITION
-  // wheels[0].setTargetPosition(300);
+  wheels[0].setTargetPosition(0);
+  wheels[1].setTargetPosition(0);
+  wheels[2].setTargetPosition(0);
+  wheels[3].setTargetPosition(0);
+
 #endif // POSITION
 
 
@@ -156,6 +163,20 @@ void setup()
   // // Start the serverd
   // server.begin();
 
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
+
+  Serial.println("Connected to WiFi!");
+  Serial.print("ESP32 IP Address: ");
+  Serial.println(WiFi.localIP());
+
+
+  server.begin();
+  Serial.println("Server started");
+
 }
 
 void SerialDataWrite();
@@ -164,13 +185,51 @@ void command_test(char option);
 void loop()
 {
 
+  currentMillis = millis();
+
+  // if (!client || !client.connected()) {
+  //   client = server.available(); // Accept new client
+  //   if (client) {
+  //     Serial.println("New client connected");
+  //   }
+  // } else {
+  //   while (client.available()) {
+  //     String data = client.readStringUntil('\n'); // Read incoming data
+  //     Serial.println("Received: " + data);
+  //     // Process the received data
+  //   }
+  //   // Optionally, send data back to the Python script
+  //   client.println("ESP32: Acknowledged");
+  // }
+
+  // if (currentMillis - previousMillisUpdateRPM > interval_pid_velocity) {
+
+  //     // Info velocity
+  //   if (currentMillis - previousMillisInfoVelocity > interval_velocity_info) {
+  //     mecanumCar.carInfo();
+  //     previousMillisInfoVelocity = currentMillis;
+  //   }
+
+  //   for(int i = 0; i < WHEEL_COUNT; i++){
+  //     wheels[i].updateRealRPM();
+  //     // wheels[i].tuningRPM();
+  
+  //     wheels[i].resetEncValue(); // Reset encoder value
+  //   }
+  //   mecanumCar.updateVelocity();
+  //   mecanumCar.updatePosition();
+  //   // mecanumCar.carInfo();
+  //   previousMillisUpdateRPM = currentMillis;
+  // }
+
 #ifdef VELOCITY
 
-  currentMillis = millis();
+  // currentMillis = millis();
 
   // PID Velocity
   // if (currentMillis - previousMillisPIDVelocity > interval_pid_velocity) {
   //   for (int i = 0; i < WHEEL_COUNT; i++) {
+  //     wheels[i].updateRealRPM();
   //     wheels[i].tuningRPM();
   //   }
   //   previousMillisPIDVelocity = currentMillis;
@@ -210,8 +269,10 @@ void loop()
 #endif // VELOCITY
 
 #ifdef POSITION
+
+  // currentMillis = millis();
+
   // Position
-  currentMillis = millis();
   if (currentMillis - previousMillis > interval_position)
   {
     for (int i = 0; i < WHEEL_COUNT; i++) {
@@ -250,6 +311,49 @@ void loop()
   SerialDataWrite();
 
 #endif // POSITION
+
+  // TESTING
+   if (!client || !client.connected()) {
+    client = server.available(); // Accept new client
+    if (client) {
+      Serial.println("New client connected");
+    }
+  } else {
+    while (client.available()) {
+      String jsonString = client.readStringUntil('\n'); // Read JSON string
+      Serial.println("Received JSON: " + jsonString);
+
+      // Parse the JSON string
+      JsonDocument doc;
+      DeserializationError error = deserializeJson(doc, jsonString);
+
+      if (error) {
+        Serial.print("JSON deserialization failed: ");
+        Serial.println(error.c_str());
+        continue;
+      }
+
+      // Extract values
+      int p1 = doc["p1"];
+      int p2 = doc["p2"];
+      int p3 = doc["p3"];
+      int p4 = doc["p4"];
+
+      positions[0] += p1;
+      positions[1] += p2;
+      positions[2] += p3;
+      positions[3] += p4;
+
+
+      // Print extracted values
+      Serial.printf("p1: %d, p2: %d, p3: %d, p4: %d\n", p1, p2, p3, p4);
+      break;
+
+      // Use these variables in your program
+    }
+  }
+
+
 
   // DeserializationError error = uart_reader.read(doc);
   size_t bytes_read = 0;
@@ -319,11 +423,11 @@ void loop()
         Serial.println(p2);
         Serial.println(p3);
         Serial.println(p4);
-        positions[0] += p1;
-        // positions = curpos + p1
-        positions[1] += p2;
-        positions[2] += p3;
-        positions[3] += p4;
+        
+        // positions[0] += p1;
+        // positions[1] += p2;
+        // positions[2] += p3;
+        // positions[3] += p4;
 
         // Serial.print(vx);
         // Serial.print(" ");
