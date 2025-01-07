@@ -67,7 +67,7 @@ void Car::updatePosition() {
   long currentTime =  millis();
   double dt = (currentTime - time) / 1000.0; // Convert to seconds
 
-  angle = angle + wzCar * dt; // Convert to degrees
+  angle = angle + 2.0 * wzCar * dt;
   point_x = point_x + (vxCar * cos(angle) - vyCar * sin(angle)) * dt;
   point_y = point_y + (vxCar * sin(angle) + vyCar * cos(angle)) * dt;
   

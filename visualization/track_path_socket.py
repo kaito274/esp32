@@ -9,7 +9,7 @@ import math
 import socket
 
 # Replace with your ESP32's IP address
-ESP32_IP = "192.168.180.63"  # Example IP address (replace with actual)
+ESP32_IP = "192.168.215.63"  # Example IP address (replace with actual)
 PORT = 8080
 
 server_ip = ESP32_IP
@@ -17,6 +17,8 @@ port = PORT
 
 # Create a socket object
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+print(f"Connecting to server at {server_ip}:{port}...")
 
 # Connect to the ESP32 server
 client_socket.connect((server_ip, port))
@@ -70,12 +72,13 @@ def update_position(frame):
     # Add a new random data point to simulate car position
     new_x = x 
     new_y = y 
-    new_direction = direction * 180 / math.pi
-    # new_direction = 180
+    new_direction = direction
+    new_direction = 180 * new_direction / math.pi
 
     x_positions.append(new_x)
     y_positions.append(new_y)
-    directions.append(new_direction % 360)  # Keep direction in [0, 360) degrees
+    directions.append(new_direction)
+
 
     # time.sleep(0.25)
 

@@ -21,7 +21,7 @@ std::vector<String> test_messages = {"", "", "", ""};
 // interval for measurements
 int interval_velocity = 50;
 int interval_position = 1;
-int interval_pid_velocity = 100;
+int interval_pid_velocity = 50;
 int interval_velocity_info = 1000;
 
 // Pin configurations for motors

@@ -24,7 +24,7 @@ inline const char *password = "YOUR_PASSWORD"; // Replace with your network cred
 #define VELOCITY 0
 #define POSITION 1
 
-int toggleMode = VELOCITY;
+int toggleMode = POSITION;
 
 HardwareSerial camSerial(2);
 uint8_t buffer[UART_BUFFER_SIZE];
@@ -165,19 +165,19 @@ void setup()
   // // Start the serverd
   // server.begin();
 
-  // WiFi.begin(ssid, password);
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(1000);
-  //   Serial.println("Connecting to WiFi...");
-  // }
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.println("Connecting to WiFi...");
+  }
 
-  // Serial.println("Connected to WiFi!");
-  // Serial.print("ESP32 IP Address: ");
-  // Serial.println(WiFi.localIP());
+  Serial.println("Connected to WiFi!");
+  Serial.print("ESP32 IP Address: ");
+  Serial.println(WiFi.localIP());
 
 
-  // server.begin();
-  // Serial.println("Server started");
+  server.begin();
+  Serial.println("Server started");
 
 }
 
@@ -204,25 +204,25 @@ void loop()
   //   client.println("ESP32: Acknowledged");
   // }
 
-  // if (currentMillis - previousMillisUpdateRPM > interval_pid_velocity) {
+  if (currentMillis - previousMillisUpdateRPM > interval_pid_velocity) {
 
-  //     // Info velocity
-  //   if (currentMillis - previousMillisInfoVelocity > interval_velocity_info) {
-  //     mecanumCar.carInfo();
-  //     previousMillisInfoVelocity = currentMillis;
-  //   }
+      // Info velocity
+    if (currentMillis - previousMillisInfoVelocity > interval_velocity_info) {
+      mecanumCar.carInfo();
+      previousMillisInfoVelocity = currentMillis;
+    }
 
-  //   for(int i = 0; i < WHEEL_COUNT; i++){
-  //     wheels[i].updateRealRPM();
-  //     // wheels[i].tuningRPM();
+    for(int i = 0; i < WHEEL_COUNT; i++){
+      wheels[i].updateRealRPM();
+      // wheels[i].tuningRPM();
   
-  //     wheels[i].resetEncValue(); // Reset encoder value
-  //   }
-  //   mecanumCar.updateVelocity();
-  //   mecanumCar.updatePosition();
-  //   // mecanumCar.carInfo();
-  //   previousMillisUpdateRPM = currentMillis;
-  // }
+      wheels[i].resetEncValue(); // Reset encoder value
+    }
+    mecanumCar.updateVelocity();
+    mecanumCar.updatePosition();
+    // mecanumCar.carInfo();
+    previousMillisUpdateRPM = currentMillis;
+  }
 
 // VELOCITY MODE
 if (toggleMode == VELOCITY) { 
@@ -313,46 +313,52 @@ if (toggleMode == VELOCITY) {
   SerialDataWrite();
 }
 
-  // // TESTING
-  //  if (!client || !client.connected()) {
-  //   client = server.available(); // Accept new client
-  //   if (client) {
-  //     Serial.println("New client connected");
-  //   }
-  // } else {
-  //   while (client.available()) {
-  //     String jsonString = client.readStringUntil('\n'); // Read JSON string
-  //     Serial.println("Received JSON: " + jsonString);
+  // TESTING
+   if (!client || !client.connected()) {
+    client = server.available(); // Accept new client
+    if (client) {
+      Serial.println("New client connected");
+    }
+  } else {
+    while (client.available()) {
+      String jsonString = client.readStringUntil('\n'); // Read JSON string
+      Serial.println("Received JSON: " + jsonString);
 
-  //     // Parse the JSON string
-  //     JsonDocument doc;
-  //     DeserializationError error = deserializeJson(doc, jsonString);
+      // Parse the JSON string
+      JsonDocument doc;
+      DeserializationError error = deserializeJson(doc, jsonString);
 
-  //     if (error) {
-  //       Serial.print("JSON deserialization failed: ");
-  //       Serial.println(error.c_str());
-  //       continue;
-  //     }
+      if (error) {
+        Serial.print("JSON deserialization failed: ");
+        Serial.println(error.c_str());
+        continue;
+      }
 
-  //     // Extract values
-  //     int p1 = doc["p1"];
-  //     int p2 = doc["p2"];
-  //     int p3 = doc["p3"];
-  //     int p4 = doc["p4"];
+      // Extract values
+      int p1 = doc["p1"];
+      int p2 = doc["p2"];
+      int p3 = doc["p3"];
+      int p4 = doc["p4"];
 
-  //     positions[0] += p1;
-  //     positions[1] += p2;
-  //     positions[2] += p3;
-  //     positions[3] += p4;
+            // Update current positions
+      positions[0] = wheels[0].getEncPosition();
+      positions[1] = wheels[1].getEncPosition();
+      positions[2] = wheels[2].getEncPosition();
+      positions[3] = wheels[3].getEncPosition();
+
+      positions[0] += p1;
+      positions[1] += p2;
+      positions[2] += p3;
+      positions[3] += p4;
 
 
-  //     // Print extracted values
-  //     Serial.printf("p1: %d, p2: %d, p3: %d, p4: %d\n", p1, p2, p3, p4);
-  //     break;
+      // Print extracted values
+      Serial.printf("p1: %d, p2: %d, p3: %d, p4: %d\n", p1, p2, p3, p4);
+      break;
 
-  //     // Use these variables in your program
-  //   }
-  // }
+      // Use these variables in your program
+    }
+  }
 
 
 
@@ -427,11 +433,17 @@ if (toggleMode == VELOCITY) {
         Serial.println(p2);
         Serial.println(p3);
         Serial.println(p4);
-        
-        // positions[0] += p1;
-        // positions[1] += p2;
-        // positions[2] += p3;
-        // positions[3] += p4;
+
+        // Update current positions
+        positions[0] = wheels[0].getEncPosition();
+        positions[1] = wheels[1].getEncPosition();
+        positions[2] = wheels[2].getEncPosition();
+        positions[3] = wheels[3].getEncPosition();
+
+        positions[0] += p1;
+        positions[1] += p2;
+        positions[2] += p3;
+        positions[3] += p4;
 
         // Serial.print(vx);
         // Serial.print(" ");

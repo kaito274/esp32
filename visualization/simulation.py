@@ -15,7 +15,6 @@ port = PORT
 
 # Create a socket object
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 print(f"Connecting to server at {server_ip}:{port}...")
 
 # Connect to the ESP32 server
@@ -151,6 +150,9 @@ def start_roll(opt, distance, time_duration, step):
   elif opt == 4:
     circle_no_turn(distance, time_duration, step)
   
+  print('> before')
+  print(phi1_history, '\n', phi2_history, '\n', phi3_history, '\n', phi4_history)
+  
   # convert to pulse
   phi1_history = [round(i * 330 / (2 * pi)) for i in phi1_history]
   phi2_history = [round(i * 330 / (2 * pi) * -1) for i in phi2_history]
@@ -166,7 +168,7 @@ def start_roll(opt, distance, time_duration, step):
   # print('> velocities')
   # print(v1_history, '\n', v2_history, '\n', v3_history, '\n', v4_history)
 
-  print('> positions')
+  print('> after')
   print(phi1_history, '\n', phi2_history, '\n', phi3_history, '\n', phi4_history)
 
   # send data to ESP32 each 1 seconds
@@ -196,7 +198,7 @@ start_roll(1, 0.5, 1, 4)
 
 # for circle
 # start_roll(4, 0.5, 1, 32)
-# start_roll(0, 0.5, 1, 16)
+
 # function square_with_turn(distance, timePerOp, stepPerOp) 
 #     % global timePerOp stepPerOp;
 
