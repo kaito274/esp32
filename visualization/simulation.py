@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Replace with your ESP32's IP address and port
-ESP32_IP = "192.168.180.63"
+ESP32_IP = "192.168.215.63"
 PORT = 8080
 
 server_ip = ESP32_IP
@@ -192,11 +192,11 @@ def start_roll(opt, distance, time_duration, step):
     
 
 # for square
-# start_roll(1, 0.5, 1, 4)
+start_roll(1, 0.5, 1, 4)
 
 # for circle
-start_roll(4, 0.5, 1, 32)
-
+# start_roll(4, 0.5, 1, 32)
+# start_roll(0, 0.5, 1, 16)
 # function square_with_turn(distance, timePerOp, stepPerOp) 
 #     % global timePerOp stepPerOp;
 
