@@ -2,6 +2,10 @@
 
 const int NUM_MOTORS = 4;
 
+// velocity test
+double velo_test = 0.375 * 0.5;
+double velo_rotate = 0.25 * 0.5;
+
 // PID  Velocity constants
 double kpVelo = 0.5;
 double kiVelo = 0.0;

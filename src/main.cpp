@@ -36,9 +36,6 @@ long previousMillis = 0;
 long previousMillisUpdateRPM = 0;
 long currentMillis = 0;
 
-double velo_test = 0.375;
-double velo_rotate = 0.25;
-
 long previousMillisInfoVelocity = 0;
 long previousMillisPIDPosition = 0;
 
@@ -566,6 +563,11 @@ void command_test(char option){
     break;
   case 'l': //drift rightp
     mecanumCar.move(0.0, -velo_test, -velo_rotate);
+    break;
+  case 's': // toggle mode
+    toggleMode = (toggleMode == VELOCITY) ? POSITION : VELOCITY;
+    Serial.print("Toggle mode: ");
+    Serial.println(toggleMode);
     break;
   default:
     mecanumCar.move(0, 0, 0);
