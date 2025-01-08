@@ -183,9 +183,9 @@ void loop()
   current_millis = millis();
 
   // MODE INFO
-  for (current_millis - previous_millis_mode_info > interval_mode_info) {
+  if (current_millis - previous_millis_mode_info > interval_mode_info) {
     Serial.print("Current mode: ");
-    Serial.println(toggleMode);
+    Serial.println( toggleMode == VELOCITY ? "VELOCITY" : "POSITION" );
     previous_millis_mode_info = current_millis;
   }
 
@@ -230,12 +230,12 @@ if (toggleMode == VELOCITY) {
   if (current_millis - previous_millis_pid_velocity > interval_pid_velocity) {
 
       // Info velocity
-    if (current_millis - previous_millis_info_velocity > interval_velocity_info) {
+    if (current_millis - previous_millis_pid_velocity > interval_velocity_info) {
       // for (int i = 0; i < WHEEL_COUNT; i++) {
       //   wheels[i].infoVelocity();
       // }
       mecanumCar.carInfo();
-      previous_millis_info_velocity = current_millis;
+      previous_millis_pid_velocity = current_millis;
     }
 
     for(int i = 0; i < WHEEL_COUNT; i++){

@@ -7,7 +7,7 @@ import numpy as np
 
 
 # Replace with your ESP32's IP address and port
-ESP32_IP = "192.168.215.63"
+ESP32_IP = "192.168.180.63"
 PORT = 8080
 
 server_ip = ESP32_IP
