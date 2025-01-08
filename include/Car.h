@@ -32,6 +32,7 @@ public:
     void move(double vx, double vy, double wz);
     void updatePosition();
     void updateVelocity();   
+    void sendMessageCar();
     void carInfo();
     ~Car(); 
 };

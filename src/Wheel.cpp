@@ -15,7 +15,7 @@ Wheel::Wheel(int id, int pinA, int pinB, int L_PWM, int R_PWM) {
     this->pidVelocity = new PID(&this->currentRPM, &this->computedPWMVelocity, &this->targetRPM, kpVelo, kiVelo, kdVelo, DIRECT); 
     this->pidVelocity->SetMode(AUTOMATIC);
     this->pidVelocity->SetOutputLimits(-255, 255);
-    this->pidVelocity->SetSampleTime(50); // Set the sample time to 500ms
+    this->pidVelocity->SetSampleTime(interval_pid_velocity);
     // Set tunings 30 times per second
     this->pidVelocity->SetTunings(kpVelo, kiVelo, kdVelo);
 
@@ -25,6 +25,7 @@ Wheel::Wheel(int id, int pinA, int pinB, int L_PWM, int R_PWM) {
     this->pidPosition = new PID(&this->currentPosition, &this->computedPWMPosition, &this->targetPosition, kpPos, kiPos, kdPos, DIRECT); 
     this->pidPosition->SetMode(AUTOMATIC);
     this->pidPosition->SetOutputLimits(-255, 255);
+    this->pidPosition->SetSampleTime(interval_pid_position);
 
 }
 

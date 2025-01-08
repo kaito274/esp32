@@ -9,7 +9,7 @@ import math
 import socket
 
 # Replace with your ESP32's IP address
-ESP32_IP = "192.168.215.63"  # Example IP address (replace with actual)
+ESP32_IP = "192.168.180.63"  # Example IP address (replace with actual)
 PORT = 8080
 
 server_ip = ESP32_IP

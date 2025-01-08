@@ -128,25 +128,20 @@ void setup()
 
 #endif // POSITION
 
-
-  // // TODO: Testing PID plot
-  //   // Create the task for sending data, pinned to Core 1
+    // Create the task for sending data, pinned to Core 1
   // xTaskCreatePinnedToCore(
   //   sendDataTask,    // Task function
   //   "SendDataTask",  // Name of the task
   //   10000,           // Stack size (in words)
   //   NULL,            // Task parameter
-  //   10,               // Priority (higher value = higher priority)5
+  //   1,               // Priority (higher value = higher priority)
   //   &sendDataTaskHandle, // Task handle
   //   1                // Core to run the task (0 = Core 0, 1 = Core 1)
   // );
 
-  // // TODO: ???
-  // WiFi.begin(ssid, password);
 
-  // // Wait for connection
-  // while (WiFi.status() != WL_CONNECTED)
-  // {
+  // WiFi.begin(ssid, password);
+  // while (WiFi.status() != WL_CONNECTED) {
   //   delay(1000);
   //   Serial.println("Connecting to WiFi...");
   // }
@@ -155,22 +150,8 @@ void setup()
   // Serial.print("ESP32 IP Address: ");
   // Serial.println(WiFi.localIP());
 
-  // // Start the serverd
   // server.begin();
-
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi...");
-  }
-
-  Serial.println("Connected to WiFi!");
-  Serial.print("ESP32 IP Address: ");
-  Serial.println(WiFi.localIP());
-
-
-  server.begin();
-  Serial.println("Server started");
+  // Serial.println("Server started");
 
 }
 
@@ -229,13 +210,13 @@ if (toggleMode == VELOCITY) {
   // Velocity
   if (current_millis - previous_millis_pid_velocity > interval_pid_velocity) {
 
-      // Info velocity
-    if (current_millis - previous_millis_pid_velocity > interval_velocity_info) {
-      // for (int i = 0; i < WHEEL_COUNT; i++) {
-      //   wheels[i].infoVelocity();
-      // }
+    // Info velocity & car
+    if (current_millis - previous_millis_car_info > interval_car_info) {
+      for (int i = 0; i < WHEEL_COUNT; i++) {
+        wheels[i].infoVelocity();
+      }
       mecanumCar.carInfo();
-      previous_millis_pid_velocity = current_millis;
+      previous_millis_car_info = current_millis;
     }
 
     for(int i = 0; i < WHEEL_COUNT; i++){
@@ -251,7 +232,7 @@ if (toggleMode == VELOCITY) {
     }
     mecanumCar.updateVelocity();
     mecanumCar.updatePosition();
-    // mecanumCar.carInfo();
+    mecanumCar.sendMessageCar();
     previous_millis_pid_velocity = current_millis;
   }
   
@@ -260,11 +241,14 @@ if (toggleMode == VELOCITY) {
 
   if (current_millis - previous_millis_update_rpm > interval_update_rpm) {
 
-    //   // Info car
-    // if (current_millis - previous_millis_info_velocity > interval_velocity_info) {
-    //   mecanumCar.carInfo();
-    //   previous_millis_info_velocity = current_millis;
-    // }
+    // Info car
+    if (current_millis - previous_millis_car_info > interval_car_info) {
+      for (int i = 0; i < WHEEL_COUNT; i++) {
+        wheels[i].infoPosition();
+      }
+      mecanumCar.carInfo();
+      previous_millis_car_info = current_millis;
+    }
 
     for(int i = 0; i < WHEEL_COUNT; i++){
       wheels[i].updateRealRPM();
@@ -274,7 +258,7 @@ if (toggleMode == VELOCITY) {
     }
     mecanumCar.updateVelocity();
     mecanumCar.updatePosition();
-    mecanumCar.carInfo();
+    mecanumCar.sendMessageCar();
     previous_millis_update_rpm = current_millis;
   }
 
