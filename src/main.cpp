@@ -27,19 +27,6 @@ uint8_t buffer[UART_BUFFER_SIZE];
 // JSON_UARTReader uart_reader(camSerial, 115200, 16, 17);
 JsonDocument doc;
 
-// Counters for milliseconds during interval
-// long previousMillis = 0;
-// long previousMillisUpdateRPM = 0;
-// long currentMillis = 0;
-
-double velo_test = 0.375;
-double velo_rotate = 0.25;
-
-// long previousMillisInfoVelocity = 0;
-// long previousMillisPIDPosition = 0;
-
-// int interval_pid_position = 1000;
-// long previousMillisInfoPosition = 0;
 int positions[] = {0, 0, 0, 0};
 
 const int port = 8080;
@@ -129,15 +116,15 @@ void setup()
 #endif // POSITION
 
     // Create the task for sending data, pinned to Core 1
-  // xTaskCreatePinnedToCore(
-  //   sendDataTask,    // Task function
-  //   "SendDataTask",  // Name of the task
-  //   10000,           // Stack size (in words)
-  //   NULL,            // Task parameter
-  //   1,               // Priority (higher value = higher priority)
-  //   &sendDataTaskHandle, // Task handle
-  //   1                // Core to run the task (0 = Core 0, 1 = Core 1)
-  // );
+  xTaskCreatePinnedToCore(
+    sendDataTask,    // Task function
+    "SendDataTask",  // Name of the task
+    10000,           // Stack size (in words)
+    NULL,            // Task parameter
+    1,               // Priority (higher value = higher priority)
+    &sendDataTaskHandle, // Task handle
+    1                // Core to run the task (0 = Core 0, 1 = Core 1)
+  );
 
 
   // WiFi.begin(ssid, password);
@@ -212,9 +199,9 @@ if (toggleMode == VELOCITY) {
 
     // Info velocity & car
     if (current_millis - previous_millis_car_info > interval_car_info) {
-      for (int i = 0; i < WHEEL_COUNT; i++) {
-        wheels[i].infoVelocity();
-      }
+      // for (int i = 0; i < WHEEL_COUNT; i++) {
+      //   wheels[i].infoVelocity();
+      // }
       mecanumCar.carInfo();
       previous_millis_car_info = current_millis;
     }

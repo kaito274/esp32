@@ -21,6 +21,10 @@ extern const int NUM_MOTORS;
 
 extern int toggleMode;
 
+// Velocity test
+extern double velo_test;
+extern double velo_rotate;
+
 // PID  Velocity constants
 extern double kpVelo;
 extern double kiVelo;
