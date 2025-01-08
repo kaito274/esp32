@@ -12,9 +12,14 @@
 #define LY 0.25  // Distance from center to wheels along y-axis (in meters)
 #define WHEEL_RADIUS 0.05  // Radius of the wheel (in meters)
 
+#define VELOCITY 0
+#define POSITION 1
+
 #define MILLIS_PER_MINUTE 60000
 
 extern const int NUM_MOTORS;
+
+extern int toggleMode;
 
 // PID  Velocity constants
 extern double kpVelo;
@@ -31,10 +36,28 @@ extern String message;
 extern std::vector<String> test_messages;
 extern String message_car;
 
+// interval for measurements
 extern int interval_velocity;
 extern int interval_position;
 extern int interval_pid_velocity;
+extern int interval_pid_position;
 extern int interval_velocity_info;
+extern int interval_position_info;
+extern int interval_car_info;
+extern int interval_update_rpm;
+extern int interval_update_target_position;
+
+extern long previous_millis_info_velocity;
+extern long previous_millis_pid_velocity;
+extern long previous_millis_pid_position;
+extern long previous_millis_info_position;
+extern long previous_millis_car_info;
+extern long previous_millis_update_rpm;
+extern long previous_millis_update_target_position;
+
+extern long current_millis;
+
+
 
 // Pin configurations for motors
 extern motorPin motorPin0; // pinA, pinB, L_PWM, R_PWM
@@ -48,7 +71,7 @@ extern Wheel wheels[];
 // Mecanum car object
 extern Car mecanumCar;
 
-// extern long time;
+
 
 // Declare the trigger interrupt function
 extern void triggerW0();

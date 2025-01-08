@@ -1,6 +1,9 @@
 #include "GlobalSettings.h"
 
+
 const int NUM_MOTORS = 4;
+
+int toggleMode = VELOCITY;
 
 // PID  Velocity constants
 double kpVelo = 0.5;
@@ -22,7 +25,22 @@ std::vector<String> test_messages = {"", "", "", ""};
 int interval_velocity = 50;
 int interval_position = 1;
 int interval_pid_velocity = 50;
+int interval_pid_position = 1;
 int interval_velocity_info = 1000;
+int interval_position_info = 1000;
+int interval_car_info = 50;
+int interval_update_rpm = 50;
+int interval_update_target_position = 2000;
+
+long previous_millis_info_velocity = 0;
+long previous_millis_pid_velocity = 0;
+long previous_millis_pid_position = 0;
+long previous_millis_info_position = 0;
+long previous_millis_car_info = 0;
+long previous_millis_update_rpm = 0;
+long previous_millis_update_target_position = 0;
+
+long current_millis = 0;
 
 // Pin configurations for motors
 // motorPin motorPin0 = motorPin(4, 5, 15, 2);    // C2, C1, L_PWM, R_PWM

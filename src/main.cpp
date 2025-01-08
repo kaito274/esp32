@@ -21,10 +21,6 @@ inline const char *password = "YOUR_PASSWORD"; // Replace with your network cred
 #endif// Replace with your network credentials
 
 #define UART_BUFFER_SIZE 256
-#define VELOCITY 0
-#define POSITION 1
-
-int toggleMode = POSITION;
 
 HardwareSerial camSerial(2);
 uint8_t buffer[UART_BUFFER_SIZE];
@@ -32,27 +28,24 @@ uint8_t buffer[UART_BUFFER_SIZE];
 JsonDocument doc;
 
 // Counters for milliseconds during interval
-long previousMillis = 0;
-long previousMillisUpdateRPM = 0;
-long currentMillis = 0;
+// long previousMillis = 0;
+// long previousMillisUpdateRPM = 0;
+// long currentMillis = 0;
 
 double velo_test = 0.375;
 double velo_rotate = 0.25;
 
-long previousMillisInfoVelocity = 0;
-long previousMillisPIDPosition = 0;
+// long previousMillisInfoVelocity = 0;
+// long previousMillisPIDPosition = 0;
 
-int interval_pid_position = 1000;
-long previousMillisInfoPosition = 0;
+// int interval_pid_position = 1000;
+// long previousMillisInfoPosition = 0;
 int positions[] = {0, 0, 0, 0};
 
 const int port = 8080;
 const int stopSignal = 20;
 WiFiServer server(port);
 WiFiClient client;
-
-// Flag to track client status
-bool isClientConnected = false;
 
 // Task handle for the send data task
 TaskHandle_t sendDataTaskHandle;
@@ -187,45 +180,31 @@ void command_test(char option);
 void loop()
 {
 
-  currentMillis = millis();
+  current_millis = millis();
 
-  // if (!client || !client.connected()) {
-  //   client = server.available(); // Accept new client
-  //   if (client) {
-  //     Serial.println("New client connected");
-  //   }
-  // } else {
-  //   while (client.available()) {
-  //     String data = client.readStringUntil('\n'); // Read incoming data
-  //     Serial.println("Received: " + data);
-  //     // Process the received data
-  //   }
-  //   // Optionally, send data back to the Python script
-  //   client.println("ESP32: Acknowledged");
-  // }
+  // if (current_millis - previous_millis_update_rpm > interval_pid_velocity) {
 
-  if (currentMillis - previousMillisUpdateRPM > interval_pid_velocity) {
+  //   //   // Info car
+  //   // if (current_millis - previous_millis_info_velocity > interval_velocity_info) {
+  //   //   mecanumCar.carInfo();
+  //   //   previous_millis_info_velocity = current_millis;
+  //   // }
 
-      // Info velocity
-    if (currentMillis - previousMillisInfoVelocity > interval_velocity_info) {
-      mecanumCar.carInfo();
-      previousMillisInfoVelocity = currentMillis;
-    }
-
-    for(int i = 0; i < WHEEL_COUNT; i++){
-      wheels[i].updateRealRPM();
-      // wheels[i].tuningRPM();
+  //   for(int i = 0; i < WHEEL_COUNT; i++){
+  //     wheels[i].updateRealRPM();
+  //     // wheels[i].tuningRPM();
   
-      wheels[i].resetEncValue(); // Reset encoder value
-    }
-    mecanumCar.updateVelocity();
-    mecanumCar.updatePosition();
-    // mecanumCar.carInfo();
-    previousMillisUpdateRPM = currentMillis;
-  }
+  //     wheels[i].resetEncValue(); // Reset encoder value
+  //   }
+  //   mecanumCar.updateVelocity();
+  //   mecanumCar.updatePosition();
+  //   mecanumCar.carInfo();
+  //   previous_millis_update_rpm = current_millis;
+  // }
 
 // VELOCITY MODE
 if (toggleMode == VELOCITY) { 
+
 
   // currentMillis = millis();
 
@@ -241,15 +220,15 @@ if (toggleMode == VELOCITY) {
   
 
   // Velocity
-  if (currentMillis - previousMillis > interval_pid_velocity) {
+  if (current_millis - previous_millis_pid_velocity > interval_pid_velocity) {
 
       // Info velocity
-    if (currentMillis - previousMillisInfoVelocity > interval_velocity_info) {
+    if (current_millis - previous_millis_info_velocity > interval_velocity_info) {
       // for (int i = 0; i < WHEEL_COUNT; i++) {
       //   wheels[i].infoVelocity();
       // }
       mecanumCar.carInfo();
-      previousMillisInfoVelocity = currentMillis;
+      previous_millis_info_velocity = current_millis;
     }
 
     for(int i = 0; i < WHEEL_COUNT; i++){
@@ -266,16 +245,34 @@ if (toggleMode == VELOCITY) {
     mecanumCar.updateVelocity();
     mecanumCar.updatePosition();
     // mecanumCar.carInfo();
-    previousMillis = currentMillis;
+    previous_millis_pid_velocity = current_millis;
   }
   
   SerialDataWrite();
 } else { // POSITION MODE
 
-  // currentMillis = millis();
+  if (current_millis - previous_millis_update_rpm > interval_update_rpm) {
+
+    //   // Info car
+    // if (current_millis - previous_millis_info_velocity > interval_velocity_info) {
+    //   mecanumCar.carInfo();
+    //   previous_millis_info_velocity = current_millis;
+    // }
+
+    for(int i = 0; i < WHEEL_COUNT; i++){
+      wheels[i].updateRealRPM();
+      // wheels[i].tuningRPM();
+  
+      wheels[i].resetEncValue(); // Reset encoder value
+    }
+    mecanumCar.updateVelocity();
+    mecanumCar.updatePosition();
+    mecanumCar.carInfo();
+    previous_millis_update_rpm = current_millis;
+  }
 
   // Position
-  if (currentMillis - previousMillis > interval_position)
+  if (current_millis - previous_millis_pid_position > interval_pid_position)
   {
     for (int i = 0; i < WHEEL_COUNT; i++) {
       // wheels[i].infoPosition();
@@ -286,19 +283,19 @@ if (toggleMode == VELOCITY) {
         wheels[i].getMotor().TurnRight(wheels[i].getPWM());
       }
     }
-    previousMillis = currentMillis;
+    previous_millis_pid_position = current_millis;
   }
 
-  if (currentMillis - previousMillisInfoPosition > interval_pid_position)
+  if (current_millis - previous_millis_info_position > interval_position_info)
   {
     for (int i = 0; i < WHEEL_COUNT; i++)
     {
       wheels[i].infoPosition();
     }
-    previousMillisInfoPosition = currentMillis;
+    previous_millis_info_position = current_millis;
   }
 
-  if (currentMillis - previousMillisPIDPosition > interval_pid_position)
+  if (current_millis - previous_millis_update_target_position > interval_pid_position)
   {
 
       for (int i = 0; i < WHEEL_COUNT; i++)
@@ -307,7 +304,7 @@ if (toggleMode == VELOCITY) {
         wheels[i].setTargetPosition(positions[i]);
       }
 
-    previousMillisPIDPosition = currentMillis;
+    previous_millis_update_target_position = current_millis;
   }
 
   SerialDataWrite();
@@ -340,7 +337,7 @@ if (toggleMode == VELOCITY) {
       int p3 = doc["p3"];
       int p4 = doc["p4"];
 
-            // Update current positions
+      // Update current positions
       positions[0] = wheels[0].getEncPosition();
       positions[1] = wheels[1].getEncPosition();
       positions[2] = wheels[2].getEncPosition();
