@@ -182,6 +182,13 @@ void loop()
 
   current_millis = millis();
 
+  // MODE INFO
+  for (current_millis - previous_millis_mode_info > interval_mode_info) {
+    Serial.print("Current mode: ");
+    Serial.println(toggleMode);
+    previous_millis_mode_info = current_millis;
+  }
+
   // if (current_millis - previous_millis_update_rpm > interval_pid_velocity) {
 
   //   //   // Info car
@@ -295,7 +302,7 @@ if (toggleMode == VELOCITY) {
     previous_millis_info_position = current_millis;
   }
 
-  if (current_millis - previous_millis_update_target_position > interval_pid_position)
+  if (current_millis - previous_millis_update_target_position > interval_update_target_position)
   {
 
       for (int i = 0; i < WHEEL_COUNT; i++)

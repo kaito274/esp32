@@ -30,8 +30,10 @@ int interval_velocity_info = 1000;
 int interval_position_info = 1000;
 int interval_car_info = 50;
 int interval_update_rpm = 50;
-int interval_update_target_position = 2000;
+int interval_update_target_position = 500;
+int interval_mode_info = 2000;
 
+long previous_millis_mode_info = 0;
 long previous_millis_info_velocity = 0;
 long previous_millis_pid_velocity = 0;
 long previous_millis_pid_position = 0;

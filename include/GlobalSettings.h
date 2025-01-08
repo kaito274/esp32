@@ -46,7 +46,9 @@ extern int interval_position_info;
 extern int interval_car_info;
 extern int interval_update_rpm;
 extern int interval_update_target_position;
+extern int interval_mode_info;
 
+extern long previous_millis_mode_info;
 extern long previous_millis_info_velocity;
 extern long previous_millis_pid_velocity;
 extern long previous_millis_pid_position;
