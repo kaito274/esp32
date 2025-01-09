@@ -6,7 +6,7 @@ const int NUM_MOTORS = 4;
 int toggleMode = VELOCITY;
 
 // Velocity test
-double velo_test = 0.375;
+double velo_test = 0.6;
 double velo_rotate = 0.5;
 
 // PID  Velocity constants

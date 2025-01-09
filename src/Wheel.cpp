@@ -173,7 +173,7 @@ void Wheel::tuningPosition() {
     double error = targetPosition - currentPosition;
 
     // Apply the PID output to the motor (convert to PWM)
-    this->pwm = constrain((int)fabs(error), 0, 100); 
+    this->pwm = constrain((int)fabs(error), 0, 175); 
 
     // Determine the direction (sign of the output)
     this->direction = (error > 0) ? RIGHT_DIR : LEFT_DIR; //TODO: Check if this is correct
