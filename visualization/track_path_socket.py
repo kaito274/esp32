@@ -87,7 +87,7 @@ def update_position(frame):
 
     # Scatter plot the car's trajectory
     plt.scatter(x_positions, y_positions, color='blue', label='Car Path', s=10)  # Small dots for trajectory
-    plt.scatter([x_positions[-1]], [y_positions[-1]], color='red', label='Current Position', s=50)  # Highlight current positiongit 
+    plt.scatter([x_positions[-1]], [y_positions[-1]], color='red', label=f'Current Position (x = {x_positions[-1]}, y = {y_positions[-1]})', s=50)  # Highlight current positiongit 
 
     # Add an arrow indicating the car's current direction
     arrow_length = 0.5  # Consistent length of the arrow
