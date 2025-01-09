@@ -7,7 +7,7 @@ int toggleMode = VELOCITY;
 
 // Velocity test
 double velo_test = 0.375;
-double velo_rotate = 0.25;
+double velo_rotate = 0.5;
 
 // PID  Velocity constants
 double kpVelo = 0.5;

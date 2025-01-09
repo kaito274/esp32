@@ -179,31 +179,24 @@ void Wheel::tuningPosition() {
     this->direction = (error > 0) ? RIGHT_DIR : LEFT_DIR; //TODO: Check if this is correct
 }
 
-String Wheel::infoVelocity() {
-    double currentRPM = (float)this->getEncValue() * (MILLIS_PER_MINUTE / interval_pid_velocity) / ENC_COUNT_REV;
+void Wheel::sendMessageVelocity() {
+    test_messages[this->id] ="Wheel_ID:" + String(this->id)
+            +  " Target_RPM:" + String(this->getTargetRPM()) 
+            + " Current_RPM:" + String(this->currentRPM) 
+            + " PWM:" + String(this->pwm);
+}
+
+void Wheel::infoVelocity() {
+    // double currentRPM = (float)this->getEncValue() * (MILLIS_PER_MINUTE / interval_pid_velocity) / ENC_COUNT_REV;
 
     // Serial.println("######### Wheel Velocity Info #########");
     Serial.print("Wheel_ID:" + String(this->id));
     Serial.print("\tTarget_RPM:"); Serial.print(this->getTargetRPM());
-    Serial.print("\tPulse:"); Serial.print(this->getEncValue());
-    Serial.print("\tCurrent_RPM:"); Serial.print(currentRPM * this->cur_direction);
+    // Serial.print("\tPulse:"); Serial.print(this->getEncValue());
+    Serial.print("\tCurrent_RPM:"); Serial.print(this->currentRPM * this->cur_direction);
     Serial.print("\tDirection:"); Serial.print(this->cur_direction == RIGHT_DIR ? "RIGHT" : "LEFT");
     Serial.print("\tPWM:"); Serial.println(this->pwm);
     // Serial.print("\tERROR:"); Serial.println(this->computedPWMVelocity);
-    String test = "Target_RPM:" + String(this->getTargetRPM()) 
-                + "\tCurrent_RPM:" + String(this->currentRPM) 
-                + "\tPWM:" + String(this->pwm) 
-                + "\tERROR:" + String(this->computedPWMVelocity);
-
-    message = "Wheel_ID:" + String(this->id)
-            +  "\tTarget_RPM:" + String(this->getTargetRPM()) 
-            + "\tCurrent_RPM:" + String(this->currentRPM) 
-            + "\tPWM:" + String(this->pwm);
-    test_messages[this->id] ="Wheel_ID:" + String(this->id)
-            +  "\tTarget_RPM:" + String(this->getTargetRPM()) 
-            + "\tCurrent_RPM:" + String(this->currentRPM) 
-            + "\tPWM:" + String(this->pwm);
-    return test;
 }
 
 void Wheel::infoPosition() {
@@ -215,11 +208,6 @@ void Wheel::infoPosition() {
     Serial.print("\tCurrent_Direction:"); Serial.print(this->cur_direction == RIGHT_DIR ? "RIGHT" : "LEFT");
     Serial.print("\tMotor_Power:"); Serial.print(this->pwm);
     Serial.print("\tError:"); Serial.println(targetPosition - currentPosition);
-    // message = "Target_position:" + String(this->getTargetPosition()) 
-    //         + "\tCurrent_position:" + String(this->getEncPosition()) 
-    //         + "\tDirection:" + String(this->direction) 
-    //         + "\tMotor_Power:" + String(this->pwm) 
-    //         + "\tError:" + String(targetPosition - currentPosition) + "\n";
 }
 
 void Wheel::infoPin() {

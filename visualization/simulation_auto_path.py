@@ -122,9 +122,9 @@ def circle_center_turn(radius, timePerOp, stepPerOp):
   # % step 2: move horizontally + rotate bit by bit
   # move(radius * 2 * pi , 90, 360, timePerOp, stepPerOp); % 5m circle 180 degree turn
   
-  start_move(0, 0, -90 / 2, timePerOp, stepPerOp)
+  start_move(0, 0, -90 / 2, timePerOp, 4)
   start_move(2 * pi * radius, 90, 360 / 2, timePerOp, stepPerOp)
-
+  start_move(0, 0, 90 / 2, timePerOp, 4)
 
 def circle_no_turn(radius, timePerOp, stepPerOp):
   totalDeg = 360
@@ -174,6 +174,7 @@ def start_roll(opt, distance, time_duration, step):
   # send data to ESP32 each 1 seconds
   for i in range(len(phi1_history)):
     data_to_send = {
+      'm': 2,
       'p1': phi1_history[i],
       'p2': phi2_history[i],
       'p3': phi3_history[i],
@@ -190,14 +191,14 @@ def start_roll(opt, distance, time_duration, step):
       print("Connection lost. Could not send data.")
       break
 
-    time.sleep(1)  # Send data every 1 second
+    time.sleep(1.25)  # Send data every 1 second
     
 
 # for square
 start_roll(1, 0.5, 1, 4)
 
 # for circle
-# start_roll(4, 0.5, 1, 32)
+# start_roll(4, 0.5, 1, 16)
 
 # function square_with_turn(distance, timePerOp, stepPerOp) 
 #     % global timePerOp stepPerOp;

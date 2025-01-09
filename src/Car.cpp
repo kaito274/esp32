@@ -105,8 +105,8 @@ void Car::updateVelocity() {
 
 void Car::sendMessageCar(){
   message_car = "Point_x:" + String(point_x) 
-              + "\tPoint_y:" + String(point_y) 
-              + "\tDirection_Angle:" + String(angle);
+              + " Point_y:" + String(point_y) 
+              + " Direction_Angle:" + String(angle);
 }
 
 void Car::carInfo() {

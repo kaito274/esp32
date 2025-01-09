@@ -67,7 +67,8 @@ public:
     void updateRealRPM();
     void tuningRPM();
     void tuningPosition();
-    String infoVelocity();
+    void sendMessageVelocity();
+    void infoVelocity();
     void infoPosition();
     void infoPin();
 

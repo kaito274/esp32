@@ -65,11 +65,12 @@ void sendDataTask(void *parameter)
       {
         // Serial.println(message);
         client.println(message_car);
-        // for(int i = 0; i < WHEEL_COUNT; i++){
-        //   client.println(test_messages[i]);
-        //   delay(250);
-        // }
-        delay(250);
+        for(int i = 0; i < WHEEL_COUNT; i++){
+          // Serial.println(test_messages[i]);
+          client.println(test_messages[i]);
+          // delay(250);
+        }
+        delay(100);
       }
       // delay(150);
     }
@@ -154,28 +155,15 @@ void loop()
   if (current_millis - previous_millis_mode_info > interval_mode_info) {
     Serial.print("Current mode: ");
     Serial.println( toggleMode == VELOCITY ? "VELOCITY" : "POSITION" );
+
+    if(toggleMode == VELOCITY){ // set led 2 to LOW
+      digitalWrite(LED, LOW);
+    } else { // set led 2 to HIGH
+      digitalWrite(LED, HIGH);
+    }
+
     previous_millis_mode_info = current_millis;
   }
-
-  // if (current_millis - previous_millis_update_rpm > interval_pid_velocity) {
-
-  //   //   // Info car
-  //   // if (current_millis - previous_millis_info_velocity > interval_velocity_info) {
-  //   //   mecanumCar.carInfo();
-  //   //   previous_millis_info_velocity = current_millis;
-  //   // }
-
-  //   for(int i = 0; i < WHEEL_COUNT; i++){
-  //     wheels[i].updateRealRPM();
-  //     // wheels[i].tuningRPM();
-  
-  //     wheels[i].resetEncValue(); // Reset encoder value
-  //   }
-  //   mecanumCar.updateVelocity();
-  //   mecanumCar.updatePosition();
-  //   mecanumCar.carInfo();
-  //   previous_millis_update_rpm = current_millis;
-  // }
 
 // VELOCITY MODE
 if (toggleMode == VELOCITY) { 
@@ -209,6 +197,9 @@ if (toggleMode == VELOCITY) {
     for(int i = 0; i < WHEEL_COUNT; i++){
       wheels[i].updateRealRPM();
       wheels[i].tuningRPM();
+      for(int i = 0; i < WHEEL_COUNT; i++){
+        wheels[i].sendMessageVelocity();
+      }
       
       if (wheels[i].getDirection() == RIGHT_DIR) {
         wheels[i].getMotor().TurnRight(wheels[i].getPWM());
@@ -220,6 +211,9 @@ if (toggleMode == VELOCITY) {
     mecanumCar.updateVelocity();
     mecanumCar.updatePosition();
     mecanumCar.sendMessageCar();
+    for(int i = 0; i < WHEEL_COUNT; i++){
+      wheels[i].sendMessageVelocity();
+    }
     previous_millis_pid_velocity = current_millis;
   }
   
@@ -240,12 +234,15 @@ if (toggleMode == VELOCITY) {
     for(int i = 0; i < WHEEL_COUNT; i++){
       wheels[i].updateRealRPM();
       // wheels[i].tuningRPM();
-  
+      for(int i = 0; i < WHEEL_COUNT; i++){
+        wheels[i].sendMessageVelocity();
+      }
+    
       wheels[i].resetEncValue(); // Reset encoder value
     }
     mecanumCar.updateVelocity();
     mecanumCar.updatePosition();
-    mecanumCar.sendMessageCar();
+    mecanumCar.sendMessageCar(); 
     previous_millis_update_rpm = current_millis;
   }
 
@@ -308,28 +305,117 @@ if (toggleMode == VELOCITY) {
         Serial.println(error.c_str());
         continue;
       }
+      const operation_mode_t op_mode = doc["m"];
+      Serial.println(op_mode);
+      switch (op_mode) {
+        case (BUTTONS_MANUAL): {
+          Serial.println("BUTTON_MANUAL");
+          toggleMode = VELOCITY;
+          const char* optionStr = doc["option"]; // Retrieve as string
+          if (optionStr && strlen(optionStr) == 1) { // Ensure it's a single character
+            char option = optionStr[0];
+            command_test(option);
+          }
+          break;
+        }
+        
+        case (BUTTONS_AUTO): {
+          Serial.println("BUTTONS_AUTO");
+          toggleMode = POSITION;
 
-      // Extract values
-      int p1 = doc["p1"];
-      int p2 = doc["p2"];
-      int p3 = doc["p3"];
-      int p4 = doc["p4"];
+          // // Update current positions
+          // positions[0] = wheels[0].getEncPosition();
+          // positions[1] = wheels[1].getEncPosition();
+          // positions[2] = wheels[2].getEncPosition();
+          // positions[3] = wheels[3].getEncPosition();
 
-      // Update current positions
-      positions[0] = wheels[0].getEncPosition();
-      positions[1] = wheels[1].getEncPosition();
-      positions[2] = wheels[2].getEncPosition();
-      positions[3] = wheels[3].getEncPosition();
+          // // {"m":2,"step":1,"p1":"12.887","p2":"12.887","p3":"12.887","p4":"12.887"}
+          // const double p1 = doc["p1"], p2 = doc["p2"], p3 = doc["p3"], p4 = doc["p4"];
+          // const uint8_t step = doc["step"];
+          // // const double vx = doc["p1"], vy = doc["p2"];
+          // // const uint8_t throttle = doc["th"];
 
-      positions[0] += p1;
-      positions[1] += p2;
-      positions[2] += p3;
-      positions[3] += p4;
+          // Serial.println(step);
+          // Serial.println(p1);
+          // Serial.println(p2);
+          // Serial.println(p3);
+          // Serial.println(p4);
+
+          // positions[0] += p1;
+          // positions[1] += p2;
+          // positions[2] += p3;
+          // positions[3] += p4;
+
+          // Extract values
+          int p1 = doc["p1"];
+          int p2 = doc["p2"];
+          int p3 = doc["p3"];
+          int p4 = doc["p4"];
+
+          // Update current positions
+          positions[0] = wheels[0].getEncPosition();
+          positions[1] = wheels[1].getEncPosition();
+          positions[2] = wheels[2].getEncPosition();
+          positions[3] = wheels[3].getEncPosition();
+
+          positions[0] += p1;
+          positions[1] += p2;
+          positions[2] += p3;
+          positions[3] += p4;
 
 
-      // Print extracted values
-      Serial.printf("p1: %d, p2: %d, p3: %d, p4: %d\n", p1, p2, p3, p4);
-      break;
+          break;
+        } 
+
+        default: {
+          Serial.println("unknown operaiton mode");
+          break;
+        }
+      }
+
+
+  
+      // const operation_mode_t op_mode = doc["m"];
+      
+
+      // if (!doc["m"].isNull()) { // button manually
+      //   const operation_mode_t op_mode = doc["m"];
+      //   const char* optionStr = doc["option"]; // Retrieve as string
+      //   Serial.print("Option: ");
+      //   Serial.println(optionStr);
+
+      //   if (optionStr && strlen(optionStr) == 1) { // Ensure it's a single character
+      //     char option = optionStr[0];
+      //     command_test(option);
+      //   }
+      // }
+
+      // // Simulation auto path
+      // if (!doc["p1"].isNull()) {
+        
+      //   toggleMode = POSITION;
+      //   // Extract values
+      //   int p1 = doc["p1"];
+      //   int p2 = doc["p2"];
+      //   int p3 = doc["p3"];
+      //   int p4 = doc["p4"];
+
+      //   // Update current positions
+      //   positions[0] = wheels[0].getEncPosition();
+      //   positions[1] = wheels[1].getEncPosition();
+      //   positions[2] = wheels[2].getEncPosition();
+      //   positions[3] = wheels[3].getEncPosition();
+
+      //   positions[0] += p1;
+      //   positions[1] += p2;
+      //   positions[2] += p3;
+      //   positions[3] += p4;
+
+
+      //   // Print extracted values
+      //   Serial.printf("p1: %d, p2: %d, p3: %d, p4: %d\n", p1, p2, p3, p4);
+      //   break;
+      // }
 
       // Use these variables in your program
     }
@@ -365,8 +451,8 @@ if (toggleMode == VELOCITY) {
             break;
           }
           case (ROTATIONAL): {
-            // const double wz = doc["z"];
-            // mecanumCar.move(0, 0, wz*0.2);
+            const double wz = doc["z"];
+            mecanumCar.move(0, 0, wz * velo_rotate);
             break;
           }
           default: {
@@ -397,8 +483,15 @@ if (toggleMode == VELOCITY) {
       
       case (BUTTONS_AUTO): {
         toggleMode = POSITION;
+
+        // Update current positions
+        positions[0] = wheels[0].getEncPosition();
+        positions[1] = wheels[1].getEncPosition();
+        positions[2] = wheels[2].getEncPosition();
+        positions[3] = wheels[3].getEncPosition();
+
         // {"m":2,"step":1,"p1":"12.887","p2":"12.887","p3":"12.887","p4":"12.887"}
-        const double p1 = doc["p1"], p2 = doc["p2"], p3 = doc["p3"], p4 = doc["p4"];
+        const int p1 = doc["p1"], p2 = doc["p2"], p3 = doc["p3"], p4 = doc["p4"];
         const uint8_t step = doc["step"];
         // const double vx = doc["p1"], vy = doc["p2"];
         // const uint8_t throttle = doc["th"];
@@ -408,12 +501,6 @@ if (toggleMode == VELOCITY) {
         Serial.println(p2);
         Serial.println(p3);
         Serial.println(p4);
-
-        // Update current positions
-        positions[0] = wheels[0].getEncPosition();
-        positions[1] = wheels[1].getEncPosition();
-        positions[2] = wheels[2].getEncPosition();
-        positions[3] = wheels[3].getEncPosition();
 
         positions[0] += p1;
         positions[1] += p2;
@@ -541,6 +628,21 @@ void command_test(char option){
     break;
   case 'l': //drift rightp
     mecanumCar.move(0.0, -velo_test, -velo_rotate);
+    break;
+  case 't': // Toggle mode
+    toggleMode = toggleMode == VELOCITY ? POSITION : VELOCITY;
+    Serial.print("Current mode: ");
+    Serial.println( toggleMode == VELOCITY ? "VELOCITY" : "POSITION" );
+    if (toggleMode == POSITION) {
+        // Update current positions
+        positions[0] = wheels[0].getEncPosition();
+        positions[1] = wheels[1].getEncPosition();
+        positions[2] = wheels[2].getEncPosition();
+        positions[3] = wheels[3].getEncPosition();
+    }
+    break;
+  case 'a':
+    mecanumCar.move(velo_test, 0, 0.5);
     break;
   default:
     mecanumCar.move(0, 0, 0);
