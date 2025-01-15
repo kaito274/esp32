@@ -4,6 +4,7 @@
 #include "Wheel.h"
 #include "Car.h"
 #include "util.h"
+#include <WiFi.h>
 #include <vector>
 
 #define RIGHT_DIR 1
@@ -77,11 +78,18 @@ extern Wheel wheels[];
 // Mecanum car object
 extern Car mecanumCar;
 
+// Target positions for the wheels
+extern int positions[];
+
 // Declare the trigger interrupt function
 extern void triggerW0();
 extern void triggerW1();
 extern void triggerW2();
 extern void triggerW3();
+
+// Wifi configs
+extern WiFiServer server_esp32;
+extern WiFiClient client;
 
 typedef enum
 {

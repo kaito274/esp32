@@ -70,10 +70,18 @@ Wheel wheels[] = {
     Wheel(3, motorPin3.pinA, motorPin3.pinB, motorPin3.L_PWM, motorPin3.R_PWM)};
 
 Car mecanumCar(LX, LY, WHEEL_RADIUS, wheels);
-// long time = 0;
+
+// Set target positions for each wheel
+int positions[] = {0, 0, 0, 0};
 
 // Declare the trigger interrupt function
 void triggerW0() { wheels[0].triggerInterrupt(); };
 void triggerW1() { wheels[1].triggerInterrupt(); };
 void triggerW2() { wheels[2].triggerInterrupt(); };
 void triggerW3() { wheels[3].triggerInterrupt(); };
+
+// Wifi Configs
+const int port = 8080;
+const int stopSignal = 20;
+WiFiServer server_esp32(port);
+// WiFiClient client;

@@ -34,7 +34,8 @@ public:
     void updatePosition();
     void updateVelocity();
     void sendSocketCarPosition();
-    void carInfo();
+    void infoPosition();
+    void infoVelocity();
     ~Car();
 };
 

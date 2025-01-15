@@ -110,12 +110,34 @@ void Car::sendSocketCarPosition()
   message_socket_car_position = "Point_x:" + String(point_x) + " Point_y:" + String(point_y) + " Direction_Angle:" + String(angle);
 }
 
-void Car::carInfo()
+void Car::infoPosition()
 {
+  if (current_millis - previous_millis_car_info <= interval_car_info) return;
+  Serial.print(toggleMode == VELOCITY ? "Current Mode: VELOCITY" : "Current Mode: POSITION");
   Serial.print("Point_x:" + String(point_x));
   Serial.print("\tPoint_y:" + String(point_y));
   Serial.print("\tDirection_Angle:" + String(angle));
   Serial.println("");
+  
+  for (int i = 0; i < WHEEL_COUNT; i++)
+  {
+    this->wheels[i]->infoPosition();
+  }
+  previous_millis_car_info = current_millis;
+}
+
+void Car::infoVelocity() {
+  if (current_millis - previous_millis_car_info <= interval_car_info) return;
+  Serial.print(toggleMode == VELOCITY ? "Current Mode: VELOCITY" : "Current Mode: POSITION");
+  Serial.print("Vx:" + String(vxCar));
+  Serial.print("\tVy:" + String(vyCar));
+  Serial.print("\tWz:" + String(wzCar));
+  Serial.println("");
+
+  for (int i = 0; i < WHEEL_COUNT; i++)
+  {
+    this->wheels[i]->infoVelocity(); 
+  }
 }
 
 Car::~Car()
