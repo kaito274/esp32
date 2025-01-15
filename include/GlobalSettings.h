@@ -8,9 +8,9 @@
 
 #define RIGHT_DIR 1
 #define LEFT_DIR -1
-#define LX 0.25 // Distance from center to wheels along x-axis (in meters)
-#define LY 0.25  // Distance from center to wheels along y-axis (in meters)
-#define WHEEL_RADIUS 0.05  // Radius of the wheel (in meters)
+#define LX 0.25           // Distance from center to wheels along x-axis (in meters)
+#define LY 0.25           // Distance from center to wheels along y-axis (in meters)
+#define WHEEL_RADIUS 0.05 // Radius of the wheel (in meters)
 
 #define VELOCITY 0
 #define POSITION 1
@@ -37,8 +37,8 @@ extern double kdPos;
 
 extern int dir;
 extern String message;
-extern std::vector<String> test_messages;
-extern String message_car;
+extern std::vector<String> message_socket_velocity;
+extern String message_socket_car_position;
 
 // interval for measurements
 extern int interval_velocity;
@@ -51,6 +51,7 @@ extern int interval_car_info;
 extern int interval_update_rpm;
 extern int interval_update_target_position;
 extern int interval_mode_info;
+extern int interval_velocity_position_info;
 
 extern long previous_millis_mode_info;
 extern long previous_millis_info_velocity;
@@ -60,10 +61,9 @@ extern long previous_millis_info_position;
 extern long previous_millis_car_info;
 extern long previous_millis_update_rpm;
 extern long previous_millis_update_target_position;
+extern long previous_millis_velocity_position_info;
 
 extern long current_millis;
-
-
 
 // Pin configurations for motors
 extern motorPin motorPin0; // pinA, pinB, L_PWM, R_PWM
@@ -77,20 +77,20 @@ extern Wheel wheels[];
 // Mecanum car object
 extern Car mecanumCar;
 
-
-
 // Declare the trigger interrupt function
 extern void triggerW0();
 extern void triggerW1();
 extern void triggerW2();
 extern void triggerW3();
 
-typedef enum {
+typedef enum
+{
     OMNIDIRECTIONAL,
     ROTATIONAL
 } movement_t;
 
-typedef enum {
+typedef enum
+{
     JOYSTICK_MANUAL,
     BUTTONS_MANUAL,
     BUTTONS_AUTO

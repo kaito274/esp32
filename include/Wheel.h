@@ -5,7 +5,8 @@
 #include "Encoder.h"
 #include <PID_v1.h>
 
-class Wheel {
+class Wheel
+{
 private:
     int id;
 
@@ -15,8 +16,8 @@ private:
     Motor *motor;
 
     // PID Velocity constants
-    double currentRPM;  
-    double computedPWMVelocity; 
+    double currentRPM;
+    double computedPWMVelocity;
     double targetRPM;
 
     // PID Position constants
@@ -27,6 +28,7 @@ private:
     double pwm = 0;
     int direction = 1;
     int cur_direction = 1;
+
 public:
     Wheel();
     Wheel(int id, int pinA, int pinB, int L_PWM, int R_PWM);
@@ -67,7 +69,7 @@ public:
     void updateRealRPM();
     void tuningRPM();
     void tuningPosition();
-    void sendMessageVelocity();
+    void sendSocketVelocity();
     void infoVelocity();
     void infoPosition();
     void infoPin();

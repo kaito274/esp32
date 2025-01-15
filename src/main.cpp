@@ -15,10 +15,10 @@
 // Server settings
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
-inline const char *ssid = "YOUR_SSID"; // Replace with your network credentials
+inline const char *ssid = "YOUR_SSID";         // Replace with your network credentials
 inline const char *password = "YOUR_PASSWORD"; // Replace with your network credentials
 
-#endif// Replace with your network credentials
+#endif // Replace with your network credentials
 
 #define UART_BUFFER_SIZE 256
 
@@ -64,11 +64,12 @@ void sendDataTask(void *parameter)
       while (client.connected())
       {
         // Serial.println(message);
-        client.println(message_car);
-        for(int i = 0; i < WHEEL_COUNT; i++){
-          // Serial.println(test_messages[i]);
-          client.println(test_messages[i]);
-          // delay(250);
+        client.println(message_socket_car_position);
+        for (int i = 0; i < WHEEL_COUNT; i++)
+        {
+          // Serial.println(message_socket_velocity[i]);
+          client.println(message_socket_velocity[i]);
+          delay(100);
         }
         delay(100);
       }
@@ -77,7 +78,6 @@ void sendDataTask(void *parameter)
   }
 }
 
-
 void setup()
 {
   Serial.begin(115200);
@@ -85,9 +85,6 @@ void setup()
   pinMode(LED, OUTPUT);
   pinMode(26, OUTPUT);
   pinMode(27, OUTPUT);
-
-
-  // move(0.0, 0.0, 1.0);
 
   // Attach the interrupt functions to the encoder pins
   attachInterrupt(digitalPinToInterrupt(wheels[0].getEncPinA()), triggerW0, RISING);
@@ -116,77 +113,62 @@ void setup()
 
 #endif // POSITION
 
-    // Create the task for sending data, pinned to Core 1
+  // Create the task for sending data, pinned to Core 1
   xTaskCreatePinnedToCore(
-    sendDataTask,    // Task function
-    "SendDataTask",  // Name of the task
-    10000,           // Stack size (in words)
-    NULL,            // Task parameter
-    1,               // Priority (higher value = higher priority)
-    &sendDataTaskHandle, // Task handle
-    1                // Core to run the task (0 = Core 0, 1 = Core 1)
+      sendDataTask,        // Task function
+      "SendDataTask",      // Name of the task
+      10000,               // Stack size (in words)
+      NULL,                // Task parameter
+      1,                   // Priority (higher value = higher priority)
+      &sendDataTaskHandle, // Task handle
+      1                    // Core to run the task (0 = Core 0, 1 = Core 1)
   );
 
+  // WiFi.begin(ssid, password);
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(1000);
+  //   Serial.println("Connecting to WiFi...");
+  // }
 
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting to WiFi...");
-  }
+  // Serial.println("Connected to WiFi!");
+  // Serial.print("ESP32 IP Address: ");
+  // Serial.println(WiFi.localIP());
 
-  Serial.println("Connected to WiFi!");
-  Serial.print("ESP32 IP Address: ");
-  Serial.println(WiFi.localIP());
-
-  server.begin();
-  Serial.println("Server started");
-
+  // server.begin();
+  // Serial.println("Server started");
 }
 
 void SerialDataWrite();
 void command_test(char option);
 
-void loop()
+void serialPrintVelocityPositionInfo()
 {
-
-  current_millis = millis();
-
-  // MODE INFO
-  if (current_millis - previous_millis_mode_info > interval_mode_info) {
-    Serial.print("Current mode: ");
-    Serial.println( toggleMode == VELOCITY ? "VELOCITY" : "POSITION" );
-
-    if(toggleMode == VELOCITY){ // set led 2 to LOW
-      digitalWrite(LED, LOW);
-    } else { // set led 2 to HIGH
-      digitalWrite(LED, HIGH);
+  if (current_millis - previous_millis_velocity_position_info > interval_velocity_position_info)
+  {
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
+      if (toggleMode == VELOCITY)
+      {
+        wheels[i].infoVelocity();
+      }
+      else
+      {
+        wheels[i].infoPosition();
+      }
     }
-
-    previous_millis_mode_info = current_millis;
+    previous_millis_velocity_position_info = current_millis;
   }
+}
 
-// VELOCITY MODE
-if (toggleMode == VELOCITY) { 
-
-
-  // currentMillis = millis();
-
-  // PID Velocity
-  // if (currentMillis - previousMillisPIDVelocity > interval_pid_velocity) {
-  //   for (int i = 0; i < WHEEL_COUNT; i++) {
-  //     wheels[i].updateRealRPM();
-  //     wheels[i].tuningRPM();
-  //   }
-  //   previousMillisPIDVelocity = currentMillis;
-  // }
-
-  
-
-  // Velocity
-  if (current_millis - previous_millis_pid_velocity > interval_pid_velocity) {
+void mode_velocity()
+{
+  // Update car RPM
+  if (current_millis - previous_millis_update_rpm > interval_update_rpm)
+  {
 
     // Info velocity & car
-    if (current_millis - previous_millis_car_info > interval_car_info) {
+    if (current_millis - previous_millis_car_info > interval_car_info)
+    {
       // for (int i = 0; i < WHEEL_COUNT; i++) {
       //   wheels[i].infoVelocity();
       // }
@@ -194,90 +176,104 @@ if (toggleMode == VELOCITY) {
       previous_millis_car_info = current_millis;
     }
 
-    for(int i = 0; i < WHEEL_COUNT; i++){
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
       wheels[i].updateRealRPM();
+      // wheels[i].tuningRPM()
+    }
+    mecanumCar.updateVelocity();
+    mecanumCar.updatePosition();
+    mecanumCar.sendSocketCarPosition();
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
+      wheels[i].sendSocketVelocity();
+    }
+    previous_millis_update_rpm = current_millis;
+  }
+
+  // PID Tuning for velocity
+  if (current_millis - previous_millis_pid_velocity > interval_pid_velocity)
+  {
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
       wheels[i].tuningRPM();
-      for(int i = 0; i < WHEEL_COUNT; i++){
-        wheels[i].sendMessageVelocity();
-      }
-      
-      if (wheels[i].getDirection() == RIGHT_DIR) {
+      if (wheels[i].getDirection() == RIGHT_DIR)
+      {
         wheels[i].getMotor().TurnRight(wheels[i].getPWM());
-      } else {
+      }
+      else
+      {
         wheels[i].getMotor().TurnLeft(wheels[i].getPWM());
       }
       wheels[i].resetEncValue(); // Reset encoder value
     }
-    mecanumCar.updateVelocity();
-    mecanumCar.updatePosition();
-    mecanumCar.sendMessageCar();
-    for(int i = 0; i < WHEEL_COUNT; i++){
-      wheels[i].sendMessageVelocity();
-    }
     previous_millis_pid_velocity = current_millis;
   }
-  
-  SerialDataWrite();
-} else { // POSITION MODE
 
-  if (current_millis - previous_millis_update_rpm > interval_update_rpm) {
+  serialPrintVelocityPositionInfo();
+
+  SerialDataWrite();
+}
+
+void mode_position()
+{
+  // Update car RPM
+  if (current_millis - previous_millis_update_rpm > interval_update_rpm)
+  {
 
     // Info car
-    if (current_millis - previous_millis_car_info > interval_car_info) {
-      for (int i = 0; i < WHEEL_COUNT; i++) {
-        wheels[i].infoPosition();
-      }
+    if (current_millis - previous_millis_car_info > interval_car_info)
+    {
+      // for (int i = 0; i < WHEEL_COUNT; i++) {
+      //   wheels[i].infoPosition();
+      // }
       mecanumCar.carInfo();
       previous_millis_car_info = current_millis;
     }
 
-    for(int i = 0; i < WHEEL_COUNT; i++){
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
       wheels[i].updateRealRPM();
       // wheels[i].tuningRPM();
-      for(int i = 0; i < WHEEL_COUNT; i++){
-        wheels[i].sendMessageVelocity();
-      }
-    
       wheels[i].resetEncValue(); // Reset encoder value
     }
     mecanumCar.updateVelocity();
     mecanumCar.updatePosition();
-    mecanumCar.sendMessageCar(); 
+    mecanumCar.sendSocketCarPosition();
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
+      wheels[i].sendSocketVelocity();
+    }
     previous_millis_update_rpm = current_millis;
   }
 
-  // Position
+  // PID Tuning for position
   if (current_millis - previous_millis_pid_position > interval_pid_position)
   {
-    for (int i = 0; i < WHEEL_COUNT; i++) {
-      // wheels[i].infoPosition();
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
       wheels[i].tuningPosition();
-      if (wheels[i].getDirection() == LEFT_DIR) {
+      if (wheels[i].getDirection() == LEFT_DIR)
+      {
         wheels[i].getMotor().TurnLeft(wheels[i].getPWM());
-      } else {
+      }
+      else
+      {
         wheels[i].getMotor().TurnRight(wheels[i].getPWM());
       }
     }
     previous_millis_pid_position = current_millis;
   }
 
-  if (current_millis - previous_millis_info_position > interval_position_info)
-  {
-    for (int i = 0; i < WHEEL_COUNT; i++)
-    {
-      wheels[i].infoPosition();
-    }
-    previous_millis_info_position = current_millis;
-  }
+  serialPrintVelocityPositionInfo();
 
   if (current_millis - previous_millis_update_target_position > interval_update_target_position)
   {
 
-      for (int i = 0; i < WHEEL_COUNT; i++)
-      {
-        // positions[cur] += 130;
-        wheels[i].setTargetPosition(positions[i]);
-      }
+    for (int i = 0; i < WHEEL_COUNT; i++)
+    {
+      wheels[i].setTargetPosition(positions[i]);
+    }
 
     previous_millis_update_target_position = current_millis;
   }
@@ -285,14 +281,51 @@ if (toggleMode == VELOCITY) {
   SerialDataWrite();
 }
 
+void loop()
+{
+
+  current_millis = millis();
+
+  // DEBUG MODE INFO
+  if (current_millis - previous_millis_mode_info > interval_mode_info)
+  {
+    Serial.print("Current mode: ");
+    Serial.println(toggleMode == VELOCITY ? "VELOCITY" : "POSITION");
+
+    if (toggleMode == VELOCITY)
+    { // set led 2 to LOW
+      digitalWrite(LED, LOW);
+    }
+    else
+    { // set led 2 to HIGH
+      digitalWrite(LED, HIGH);
+    }
+    previous_millis_mode_info = current_millis;
+  }
+
+  // VELOCITY MODE
+  if (toggleMode == VELOCITY)
+  {
+    mode_velocity();
+  }
+  else
+  { // POSITION MODE
+    mode_position();
+  }
+
   // TESTING
-   if (!client || !client.connected()) {
+  if (!client || !client.connected())
+  {
     client = server.available(); // Accept new client
-    if (client) {
+    if (client)
+    {
       Serial.println("New client connected");
     }
-  } else {
-    while (client.available()) {
+  }
+  else
+  {
+    while (client.available())
+    {
       String jsonString = client.readStringUntil('\n'); // Read JSON string
       Serial.println("Received JSON: " + jsonString);
 
@@ -300,132 +333,67 @@ if (toggleMode == VELOCITY) {
       JsonDocument doc;
       DeserializationError error = deserializeJson(doc, jsonString);
 
-      if (error) {
+      if (error)
+      {
         Serial.print("JSON deserialization failed: ");
         Serial.println(error.c_str());
         continue;
       }
       const operation_mode_t op_mode = doc["m"];
       Serial.println(op_mode);
-      switch (op_mode) {
-        case (BUTTONS_MANUAL): {
-          Serial.println("BUTTON_MANUAL");
-          toggleMode = VELOCITY;
-          const char* optionStr = doc["option"]; // Retrieve as string
-          if (optionStr && strlen(optionStr) == 1) { // Ensure it's a single character
-            char option = optionStr[0];
-            command_test(option);
-          }
-          break;
+      switch (op_mode)
+      {
+      case (BUTTONS_MANUAL):
+      {
+        Serial.println("BUTTON_MANUAL");
+        toggleMode = VELOCITY;
+        const char *optionStr = doc["option"]; // Retrieve as string
+        if (optionStr && strlen(optionStr) == 1)
+        { // Ensure it's a single character
+          char option = optionStr[0];
+          command_test(option);
         }
-        
-        case (BUTTONS_AUTO): {
-          Serial.println("BUTTONS_AUTO");
-          toggleMode = POSITION;
-
-          // // Update current positions
-          // positions[0] = wheels[0].getEncPosition();
-          // positions[1] = wheels[1].getEncPosition();
-          // positions[2] = wheels[2].getEncPosition();
-          // positions[3] = wheels[3].getEncPosition();
-
-          // // {"m":2,"step":1,"p1":"12.887","p2":"12.887","p3":"12.887","p4":"12.887"}
-          // const double p1 = doc["p1"], p2 = doc["p2"], p3 = doc["p3"], p4 = doc["p4"];
-          // const uint8_t step = doc["step"];
-          // // const double vx = doc["p1"], vy = doc["p2"];
-          // // const uint8_t throttle = doc["th"];
-
-          // Serial.println(step);
-          // Serial.println(p1);
-          // Serial.println(p2);
-          // Serial.println(p3);
-          // Serial.println(p4);
-
-          // positions[0] += p1;
-          // positions[1] += p2;
-          // positions[2] += p3;
-          // positions[3] += p4;
-
-          // Extract values
-          int p1 = doc["p1"];
-          int p2 = doc["p2"];
-          int p3 = doc["p3"];
-          int p4 = doc["p4"];
-
-          // Update current positions
-          positions[0] = wheels[0].getEncPosition();
-          positions[1] = wheels[1].getEncPosition();
-          positions[2] = wheels[2].getEncPosition();
-          positions[3] = wheels[3].getEncPosition();
-
-          positions[0] += p1;
-          positions[1] += p2;
-          positions[2] += p3;
-          positions[3] += p4;
-
-
-          break;
-        } 
-
-        default: {
-          Serial.println("unknown operaiton mode");
-          break;
-        }
+        break;
       }
 
+      case (BUTTONS_AUTO):
+      {
+        Serial.println("BUTTONS_AUTO");
+        toggleMode = POSITION;
 
-  
-      // const operation_mode_t op_mode = doc["m"];
-      
+        // Extract values
+        int p1 = doc["p1"];
+        int p2 = doc["p2"];
+        int p3 = doc["p3"];
+        int p4 = doc["p4"];
 
-      // if (!doc["m"].isNull()) { // button manually
-      //   const operation_mode_t op_mode = doc["m"];
-      //   const char* optionStr = doc["option"]; // Retrieve as string
-      //   Serial.print("Option: ");
-      //   Serial.println(optionStr);
+        // Update current positions
+        positions[0] = wheels[0].getEncPosition();
+        positions[1] = wheels[1].getEncPosition();
+        positions[2] = wheels[2].getEncPosition();
+        positions[3] = wheels[3].getEncPosition();
 
-      //   if (optionStr && strlen(optionStr) == 1) { // Ensure it's a single character
-      //     char option = optionStr[0];
-      //     command_test(option);
-      //   }
-      // }
+        positions[0] += p1;
+        positions[1] += p2;
+        positions[2] += p3;
+        positions[3] += p4;
 
-      // // Simulation auto path
-      // if (!doc["p1"].isNull()) {
-        
-      //   toggleMode = POSITION;
-      //   // Extract values
-      //   int p1 = doc["p1"];
-      //   int p2 = doc["p2"];
-      //   int p3 = doc["p3"];
-      //   int p4 = doc["p4"];
+        break;
+      }
 
-      //   // Update current positions
-      //   positions[0] = wheels[0].getEncPosition();
-      //   positions[1] = wheels[1].getEncPosition();
-      //   positions[2] = wheels[2].getEncPosition();
-      //   positions[3] = wheels[3].getEncPosition();
-
-      //   positions[0] += p1;
-      //   positions[1] += p2;
-      //   positions[2] += p3;
-      //   positions[3] += p4;
-
-
-      //   // Print extracted values
-      //   Serial.printf("p1: %d, p2: %d, p3: %d, p4: %d\n", p1, p2, p3, p4);
-      //   break;
-      // }
-
-      // Use these variables in your program
+      default:
+      {
+        Serial.println("unknown operaiton mode");
+        break;
+      }
+      }
     }
   }
 
-
-
   // DeserializationError error = uart_reader.read(doc);
   size_t bytes_read = 0;
-  while (camSerial.available() > 0 && bytes_read < UART_BUFFER_SIZE - 1) {
+  while (camSerial.available() > 0 && bytes_read < UART_BUFFER_SIZE - 1)
+  {
     buffer[bytes_read] = camSerial.read();
     ++bytes_read;
   }
@@ -436,133 +404,95 @@ if (toggleMode == VELOCITY) {
   //   Serial.print(F("deserializeJson() failed: "));
   //   Serial.println(error.c_str());
   // } else {
- if (!error) {
+  if (!error)
+  {
     const operation_mode_t op_mode = doc["m"];
-    switch (op_mode) {
-      case (JOYSTICK_MANUAL): {
-        toggleMode = VELOCITY;
-        const double vx = doc["x"], vy = doc["y"];
-        const uint8_t op_type = doc["t"];
-        
-        switch (op_type) {
-          case (OMNIDIRECTIONAL): {
-            // const uint8_t throttle = doc["th"];
-            mecanumCar.move(vx*velo_test, vy*velo_test, 0);
-            break;
-          }
-          case (ROTATIONAL): {
-            const double wz = doc["z"];
-            mecanumCar.move(0, 0, wz * velo_rotate);
-            break;
-          }
-          default: {
-            Serial.println("unknown movement type");
-          }
-        }
+    switch (op_mode)
+    {
+    case (JOYSTICK_MANUAL):
+    {
+      toggleMode = VELOCITY;
+      const double vx = doc["x"], vy = doc["y"];
+      const uint8_t op_type = doc["t"];
 
-        break;
-      }
-
-      case (BUTTONS_MANUAL): {
-        toggleMode = VELOCITY;
-        const double vx = doc["x"], vy = doc["y"];
-        const uint8_t throttle = doc["th"];
-
-        Serial.print(vx);
-        Serial.print(" ");
-        Serial.print(vy);
-        Serial.print(" ");
-        Serial.print(throttle);
-        Serial.println();
-
-        // move(vx*0.2 , vy*0.2, 0);
-        mecanumCar.move(vx * velo_test, vy * velo_test, 0);
-
-        break;
-      }
-      
-      case (BUTTONS_AUTO): {
-        toggleMode = POSITION;
-
-        // Update current positions
-        positions[0] = wheels[0].getEncPosition();
-        positions[1] = wheels[1].getEncPosition();
-        positions[2] = wheels[2].getEncPosition();
-        positions[3] = wheels[3].getEncPosition();
-
-        // {"m":2,"step":1,"p1":"12.887","p2":"12.887","p3":"12.887","p4":"12.887"}
-        const int p1 = doc["p1"], p2 = doc["p2"], p3 = doc["p3"], p4 = doc["p4"];
-        const uint8_t step = doc["step"];
-        // const double vx = doc["p1"], vy = doc["p2"];
+      switch (op_type)
+      {
+      case (OMNIDIRECTIONAL):
+      {
         // const uint8_t throttle = doc["th"];
-
-        Serial.println(step);
-        Serial.println(p1);
-        Serial.println(p2);
-        Serial.println(p3);
-        Serial.println(p4);
-
-        positions[0] += p1;
-        positions[1] += p2;
-        positions[2] += p3;
-        positions[3] += p4;
-
-        // Serial.print(vx);
-        // Serial.print(" ");
-        // Serial.print(vy);
-        // Serial.print(" ");
-        // Serial.print(throttle);
-        // Serial.println();
-
-        // move(vx*0.2 , vy*0.2, 0);
-        // mecanumCar.move(vx*0.2, vy*0.2, 0);
-
-        break;
-      } 
-
-      default: {
-        Serial.println("unknown operaiton mode");
+        mecanumCar.move(vx * velo_test, vy * velo_test, 0);
         break;
       }
+      case (ROTATIONAL):
+      {
+        const double wz = doc["z"];
+        mecanumCar.move(0, 0, wz * velo_rotate);
+        break;
+      }
+      default:
+      {
+        Serial.println("unknown movement type");
+      }
+      }
+
+      break;
     }
-    // const movement_t mv_type = doc["t"];
-    // switch (mv_type) {
-    //   case (OMNIDIRECTIONAL): {
-    //     const operation_mode_t op_type = doc["m"];
 
-    //     switch (op_type) {
-    //       case (BUTTONS_MANUAL): {
-    //         const double vx = doc["x"], vy = doc["y"];
-    //         const uint8_t throttle = doc["th"];
+    case (BUTTONS_MANUAL):
+    {
+      toggleMode = VELOCITY;
+      const double vx = doc["x"], vy = doc["y"];
+      const uint8_t throttle = doc["th"];
 
-    //         Serial.print(vx);
-    //         Serial.print(" ");
-    //         Serial.print(vy);
-    //         Serial.print(" ");
-    //         Serial.print(throttle);
-    //         Serial.println();
+      Serial.print(vx);
+      Serial.print(" ");
+      Serial.print(vy);
+      Serial.print(" ");
+      Serial.print(throttle);
+      Serial.println();
 
-    //         // move(vx*0.2 , vy*0.2, 0);
-    //         mecanumCar.move(vx*0.2, vy*0.2, 0);
+      // move(vx*0.2 , vy*0.2, 0);
+      mecanumCar.move(vx * velo_test, vy * velo_test, 0);
 
-    //         break;
-    //       }
+      break;
+    }
 
-    //       default: {
-    //         Serial.println("unknown operaiton mode");
-    //       }
-    //     }
+    case (BUTTONS_AUTO):
+    {
+      toggleMode = POSITION;
 
-    //     break;
-    //   }
-    //   case (ROTATIONAL): {
-        
-    //     break;
-    //   }
-    //   default: {
-    //     Serial.println("unknown movement type");
-    //   }
-    // }
+      // Update current positions
+      positions[0] = wheels[0].getEncPosition();
+      positions[1] = wheels[1].getEncPosition();
+      positions[2] = wheels[2].getEncPosition();
+      positions[3] = wheels[3].getEncPosition();
+
+      // {"m":2,"step":1,"p1":"12.887","p2":"12.887","p3":"12.887","p4":"12.887"}
+      const int p1 = doc["p1"], p2 = doc["p2"], p3 = doc["p3"], p4 = doc["p4"];
+      const uint8_t step = doc["step"];
+      // const double vx = doc["p1"], vy = doc["p2"];
+      // const uint8_t throttle = doc["th"];
+
+      Serial.println(step);
+      Serial.println(p1);
+      Serial.println(p2);
+      Serial.println(p3);
+      Serial.println(p4);
+
+      positions[0] += p1;
+      positions[1] += p2;
+      positions[2] += p3;
+      positions[3] += p4;
+
+      break;
+    }
+
+    default:
+    {
+      Serial.println("unknown operaiton mode");
+      break;
+    }
+    }
   }
 }
 
@@ -584,7 +514,8 @@ void SerialDataWrite()
   }
 }
 
-void command_test(char option){
+void command_test(char option)
+{
   Serial.print("Change movement: ");
   Serial.println(option);
   switch (option)
@@ -617,28 +548,29 @@ void command_test(char option){
   case '9':
     mecanumCar.move(velo_test, -velo_test, 0.0);
     break;
-  case 'p': //rotate right
+  case 'p': // rotate right
     mecanumCar.move(0, 0, -velo_rotate);
     break;
-  case 'o': //rotate left
+  case 'o': // rotate left
     mecanumCar.move(0, 0, velo_rotate);
     break;
-  case 'k': //drift left
+  case 'k': // drift left
     mecanumCar.move(0.0, velo_test, velo_rotate);
     break;
-  case 'l': //drift rightp
+  case 'l': // drift rightp
     mecanumCar.move(0.0, -velo_test, -velo_rotate);
     break;
   case 't': // Toggle mode
     toggleMode = toggleMode == VELOCITY ? POSITION : VELOCITY;
     Serial.print("Current mode: ");
-    Serial.println( toggleMode == VELOCITY ? "VELOCITY" : "POSITION" );
-    if (toggleMode == POSITION) {
-        // Update current positions
-        positions[0] = wheels[0].getEncPosition();
-        positions[1] = wheels[1].getEncPosition();
-        positions[2] = wheels[2].getEncPosition();
-        positions[3] = wheels[3].getEncPosition();
+    Serial.println(toggleMode == VELOCITY ? "VELOCITY" : "POSITION");
+    if (toggleMode == POSITION)
+    {
+      // Update current positions
+      positions[0] = wheels[0].getEncPosition();
+      positions[1] = wheels[1].getEncPosition();
+      positions[2] = wheels[2].getEncPosition();
+      positions[3] = wheels[3].getEncPosition();
     }
     break;
   case 'a':
@@ -650,4 +582,3 @@ void command_test(char option){
     break;
   }
 }
-

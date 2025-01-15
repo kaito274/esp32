@@ -1,6 +1,5 @@
 #include "GlobalSettings.h"
 
-
 const int NUM_MOTORS = 4;
 
 int toggleMode = VELOCITY;
@@ -21,9 +20,8 @@ double kdPos = 0.0;
 
 int dir = 1;
 
-String message = "";
-String message_car = "";
-std::vector<String> test_messages = {"", "", "", ""};
+String message_socket_car_position = "";
+std::vector<String> message_socket_velocity = {"", "", "", ""};
 
 // interval for measurements
 int interval_velocity = 50;
@@ -36,6 +34,7 @@ int interval_car_info = 1000;
 int interval_update_rpm = 50;
 int interval_update_target_position = 500;
 int interval_mode_info = 2000;
+int interval_velocity_position_info = 1000;
 
 long previous_millis_mode_info = 0;
 long previous_millis_info_velocity = 0;
@@ -45,14 +44,15 @@ long previous_millis_info_position = 0;
 long previous_millis_car_info = 0;
 long previous_millis_update_rpm = 0;
 long previous_millis_update_target_position = 0;
+long previous_millis_velocity_position_info = 0;
 
 long current_millis = 0;
 
 // Pin configurations for motors
-// motorPin motorPin0 = motorPin(4, 5, 15, 2);    // C2, C1, L_PWM, R_PWM
-// motorPin motorPin1 = motorPin(25, 33, 27, 26); // C2, C1, L_PWM, R_PWM
-// motorPin motorPin2 = motorPin(21, 22, 18, 19); // C2, C1, L_PWM, R_PWM
-// motorPin motorPin3 = motorPin(32, 35, 13, 14); // C2, C1, L_PWM, R_PWM
+motorPin motorPin0 = motorPin(4, 5, 15, 2);    // pinA, pinB, L_PWM, R_PWM
+motorPin motorPin1 = motorPin(13, 14, 27, 26); // pinA, pinB, L_PWM, R_PWM
+motorPin motorPin2 = motorPin(21, 22, 18, 19); // pinA, pinB, L_PWM, R_PWM
+motorPin motorPin3 = motorPin(32, 35, 25, 33); // pinA, pinB, L_PWM, R_PWM
 
 // Wheel[0] : FL
 // Wheel[1] : FR
@@ -62,14 +62,6 @@ long current_millis = 0;
 // pinB: C1
 // Right > 0
 // Left < 0
-
-
-motorPin motorPin0 = motorPin(4, 5, 15, 2);  // pinA, pinB, L_PWM, R_PWM
-// motorPin motorPin1 = motorPin(25, 33, 27, 26);  // pinA, pinB, L_PWM, R_PWM
-motorPin motorPin1 = motorPin(13, 14, 27, 26);  // pinA, pinB, L_PWM, R_PWM
-motorPin motorPin2 = motorPin(21, 22, 18, 19);  // pinA, pinB, L_PWM, R_PWM
-// motorPin motorPin3 = motorPin(32, 35, 13, 14);  // pinA, pinB, L_PWM, R_PWM
-motorPin motorPin3 = motorPin(32, 35, 25, 33);  // pinA, pinB, L_PWM, R_PWM
 
 Wheel wheels[] = {
     Wheel(0, motorPin0.pinA, motorPin0.pinB, motorPin0.L_PWM, motorPin0.R_PWM),

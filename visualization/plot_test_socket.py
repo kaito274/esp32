@@ -122,28 +122,28 @@ def initialize_plot():
 
 def update_plot(frame):
     global x, rpms, pwms, wheels_data, duty_cycles, target_rpms
-    with data_lock:  # Acquire lock to safely access shared data
-        for i in range(NUM_WHEELS):
-            # Update data for plotting
-            hlines[i].set_ydata(target_rpms[i])  # Update the horizontal line's position
-            hlines[i].set_label(f"Target RPM {i} = {target_rpms[i]}") # Update label
-            axs[i, 0].legend(loc="upper left") # Redraw the legend
-            
-            wheels_data[i]['x_data'].append(x[i])
-            wheels_data[i]['rpm_data'].append(rpms[i])
-            wheels_data[i]['duty_cycle_data'].append(duty_cycles[i])
-            # Update RPM line
-            lines[i][0].set_data(wheels_data[i]['x_data'], wheels_data[i]['rpm_data'])
-            axs[i, 0].relim()  # Recompute limits
-            axs[i, 0].autoscale_view()  # Autoscale view
-            # axs[i, 0].set_ylim(-10, 400)  # Set a fixed y-axis range for RPM
+    # with data_lock:  # Acquire lock to safely access shared data
+    for i in range(NUM_WHEELS):
+        # Update data for plotting
+        hlines[i].set_ydata(target_rpms[i])  # Update the horizontal line's position
+        hlines[i].set_label(f"Target RPM {i} = {target_rpms[i]}") # Update label
+        axs[i, 0].legend(loc="upper left") # Redraw the legend
+        
+        wheels_data[i]['x_data'].append(x[i])
+        wheels_data[i]['rpm_data'].append(rpms[i])
+        wheels_data[i]['duty_cycle_data'].append(duty_cycles[i])
+        # Update RPM line
+        lines[i][0].set_data(wheels_data[i]['x_data'], wheels_data[i]['rpm_data'])
+        axs[i, 0].relim()  # Recompute limits
+        axs[i, 0].autoscale_view()  # Autoscale view
+        # axs[i, 0].set_ylim(-10, 400)  # Set a fixed y-axis range for RPM
 
 
-            # Update Duty Cycle line
-            lines[i][1].set_data(wheels_data[i]['x_data'], wheels_data[i]['duty_cycle_data'])
-            axs[i, 1].relim()  # Recompute limits
-            axs[i, 1].autoscale_view()  # Autoscale view
-            axs[i, 1].set_ylim(-10, 110)
+        # Update Duty Cycle line
+        lines[i][1].set_data(wheels_data[i]['x_data'], wheels_data[i]['duty_cycle_data'])
+        axs[i, 1].relim()  # Recompute limits
+        axs[i, 1].autoscale_view()  # Autoscale view
+        axs[i, 1].set_ylim(-10, 110)
 
 # Initialize plot elements
 initialize_plot()

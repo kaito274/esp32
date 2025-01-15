@@ -1,10 +1,11 @@
 #include "Car.h"
 #include "GlobalSettings.h"
 
-Car::Car(double lx, double ly, double r, Wheel* wheels): lx(lx), ly(ly), r(r), point_x(0), point_y(0), angle(0)
-{   
-  this->wheels = new Wheel*[WHEEL_COUNT];
-  for (int i = 0; i < WHEEL_COUNT; i++) {
+Car::Car(double lx, double ly, double r, Wheel *wheels) : lx(lx), ly(ly), r(r), point_x(0), point_y(0), angle(0)
+{
+  this->wheels = new Wheel *[WHEEL_COUNT];
+  for (int i = 0; i < WHEEL_COUNT; i++)
+  {
     this->wheels[i] = &wheels[i];
   }
 }
@@ -63,19 +64,21 @@ void Car::move(double vx, double vy, double wz)
   wheels[3]->setDirection(dirRR);
 }
 
-void Car::updatePosition() {
-  long currentTime =  millis();
+void Car::updatePosition()
+{
+  long currentTime = millis();
   double dt = (currentTime - time) / 1000.0; // Convert to seconds
 
   angle = angle + 2.0 * wzCar * dt;
   point_x = point_x + (vxCar * cos(angle) - vyCar * sin(angle)) * dt;
   point_y = point_y + (vxCar * sin(angle) + vyCar * cos(angle)) * dt;
-  
+
   // angle = fmod(angle, M_PI * 2); // Normalize the angle to [0, 2*PI]
   time = currentTime;
 }
 
-void Car::updateVelocity() {
+void Car::updateVelocity()
+{
   Wheel *w0 = wheels[0];
   Wheel *w1 = wheels[1];
   Wheel *w2 = wheels[2];
@@ -100,16 +103,15 @@ void Car::updateVelocity() {
   // Serial.print("\tvyCar: " + String(vyCar));
   // Serial.print("\twzCar: " + String(wzCar));
   // Serial.println("");
-
 }
 
-void Car::sendMessageCar(){
-  message_car = "Point_x:" + String(point_x) 
-              + " Point_y:" + String(point_y) 
-              + " Direction_Angle:" + String(angle);
+void Car::sendSocketCarPosition()
+{
+  message_socket_car_position = "Point_x:" + String(point_x) + " Point_y:" + String(point_y) + " Direction_Angle:" + String(angle);
 }
 
-void Car::carInfo() {
+void Car::carInfo()
+{
   Serial.print("Point_x:" + String(point_x));
   Serial.print("\tPoint_y:" + String(point_y));
   Serial.print("\tDirection_Angle:" + String(angle));
